@@ -1,0 +1,27 @@
+group 'FunProjects'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.eclipse.jetty:jetty-server:+'
+    compile 'commons-io:commons-io:+'
+
+    testCompile 'junit:junit:+'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'LocalSudokuServer'
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
