@@ -8,7 +8,7 @@ import java.util.Base64;
 import java.util.List;
 
 @RequiredArgsConstructor
-class SudokuField implements SudokuContainer {
+public class SudokuField implements SudokuContainer {
     final SudokuCell[] cells = new SudokuCell[81];
 
     @Getter
@@ -75,7 +75,7 @@ class SudokuField implements SudokuContainer {
         return values;
     }
 
-    SudokuField(String[] textRepresentation) {
+    public SudokuField(String[] textRepresentation) {
         this(destring(textRepresentation));
     }
 

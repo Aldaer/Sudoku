@@ -28,7 +28,7 @@ class SudokuCell implements SudokuElement {
             for (int i = 0; i < 9; i++) {
                 int z = x % 10;
                 if (z > 0) builder.append(z);
-                if (i % 3 == 2) builder.append("<br>");
+                if (i == 3 || i == 6) builder.append("<br>");
                 x /= 10;
             }
         }

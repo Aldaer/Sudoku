@@ -1,4 +1,3 @@
-import model.SudokuElement;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -9,29 +8,26 @@ public class LocalSudokuServer extends Thread {
 
     final Server server = new Server(PORT);
 
-    SudokuElement getPlayingField() {
-        return null;
-    }
-
     @Override
     public void run() {
         try {
-            String webDir = this.getClass().getClassLoader().getResource("WEBINF").toExternalForm();
+            String webDir = this.getClass().getClassLoader().getResource("WEB-INF").toExternalForm();
 
             ResourceHandler res = new ResourceHandler();
             res.setResourceBase(webDir);
-            res.setDirAllowed(false);
+            res.setDirAllowed(true);
 
             HandlerList hList = new HandlerList();
             hList.setHandlers(new Handler[]{
-                    res,
-                    new MainHandler(this)
+                    new MainHandler(this),
+                    res
                     });
             server.setHandler(hList);
             server.start();
             // server.join();
         } catch (Exception e) {
-            System.out.println("Error running server: " + e.getMessage());
+            System.out.println("Error running server" );
+            e.printStackTrace();
         }
     }
 
