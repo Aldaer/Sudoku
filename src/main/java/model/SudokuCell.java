@@ -11,15 +11,17 @@ class SudokuCell implements SudokuElement {
         return value >= 1_000_000_000;
     }
 
+    boolean hardcoded() {
+        return value >= 1_100_000_000;
+    }
+
     int getDefValue() {
         return definite() ? value % 10 : 0;
     }
 
     @Override
     public void appendHtml(StringBuilder builder) {
-        builder.append(String.format("<td id=\"c%d\"%s>",
-                index,
-                definite() ? "" : " class=\"hint\""));
+        appendOpeningTag(builder);
 
         if (definite())
             builder.append(value % 10);
@@ -33,5 +35,19 @@ class SudokuCell implements SudokuElement {
             }
         }
         builder.append("</td>");
+    }
+
+    private void appendOpeningTag(StringBuilder builder) {
+        builder.append("<td id=\"")
+                .append(index)
+                .append("\" ");
+        if (hardcoded())
+            builder.append("class:\"hard\"");
+        else {
+            builder.append("onclick=\"cellClick(this)\"");
+            if (!definite())
+                builder.append(" class=\"hint\"");
+        }
+        builder.append(">");
     }
 }

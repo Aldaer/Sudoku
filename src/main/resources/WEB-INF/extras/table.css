@@ -21,6 +21,10 @@ table table td {
     height: 33%;
 }
 
+table table td:hover {
+    background: rgba(39, 124, 255, 0.11);
+}
+
 th {
     background: steelblue;
     height: 54px;
@@ -48,12 +52,12 @@ td {
     text-align: center;
 }
 
-td:last-child {
+table table td:last-child {
     border-right: 0;
 }
 
 td.selected {
-    background: #d7e4ef;
+    background: rgba(10, 43, 154, 0.5);
 }
 
 ::-moz-selection {

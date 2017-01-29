@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="css/table.css"/>
+    <title>Simple Sudoku</title>
+    <link rel="stylesheet" href="extras/table.css"/>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
 </head>
 <body>
 <div class='main'>
@@ -17,175 +19,95 @@
             <td>
                 <table>
                     <tr>
-                        <td class="hint">123 456 789</td>
-                        <td>2</td>
-                        <td>3</td>
+                        <td id="0" onclick="cellClick(this)" class="hint">123 456 789</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td id="9" onclick="cellClick(this)" class="selected">4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
+                </table>
+            </td> <td>
+                <table>
                     <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
+                        <td>1</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td>4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
+                </table>
+            </td> <td>
+                <table>
                     <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
+                        <td>1</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td>4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
                 </table>
             </td>
+        </tr> <tr>
             <td>
                 <table>
                     <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>3</td>
+                        <td>1</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td>4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
+                </table>
+            </td> <td>
+                <table>
                     <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
+                        <td>1</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td>4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
+                </table>
+            </td> <td>
+                <table>
                     <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
+                        <td>1</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td>4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
                 </table>
             </td>
+        </tr> <tr>
             <td>
                 <table>
                     <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
+                        <td>1</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td>4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
                 </table>
-            </td>
-        </tr>
-        <tr>
-            <td>
+            </td> <td>
                 <table>
                     <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
+                        <td>1</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td>4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
                 </table>
-            </td>
-            <td>
+            </td> <td>
                 <table>
                     <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
-                    </tr>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <table>
-                    <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
-                    </tr>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
-                    </tr>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>3</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>6</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>8</td>
-                        <td>9</td>
+                        <td>1</td> <td>2</td> <td>3</td>
+                    </tr> <tr>
+                        <td>4</td> <td>5</td> <td>6</td>
+                    </tr> <tr>
+                        <td>7</td> <td>8</td> <td>9</td>
                     </tr>
                 </table>
             </td>
@@ -193,13 +115,11 @@
         </tbody>
     </table>
     <form>
+        <button id="coords">***</button><input type="text">
         <button formaction="/hint" formtarget="_self">Get hint</button>
-        <input type="submit" value="Kill server" formaction="/terminate" style="color: red"/>
+        <button formaction="/terminate" style="color: red">Kill server</button>
     </form>
 </div>
-<script>
-
-
-</script>
+    <script src="extras/main.js"></script>
 </body>
 </html>

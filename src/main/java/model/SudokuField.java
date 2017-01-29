@@ -86,7 +86,7 @@ public class SudokuField implements SudokuContainer {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 int strNum = (int) (textRepresentation[row].charAt(col)) - '0';
-                int num = (strNum > 0 && strNum < 10) ? 1_000_000_000 + strNum : 0;
+                int num = (strNum > 0 && strNum < 10) ? 1_100_000_000 + strNum : 0;
                 values[row * 9 + col] = num;
             }
         }
