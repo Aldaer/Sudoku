@@ -151,8 +151,7 @@ public class SudokuField implements SudokuContainer {
             int val = value.equals("") ? 0 : Integer.parseInt(value);
 
             if (val < 0 || val > 9) return;
-            if (val != 0) val = SudokuCell.definiteValue(val);
-            cells[cellNum].value = val;
+            cells[cellNum].setDefiniteValue(val);
         } catch (NumberFormatException ignored) {
         }
     }

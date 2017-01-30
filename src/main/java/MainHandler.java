@@ -57,6 +57,7 @@ class MainHandler extends AbstractHandler {
                 break;
             case "/reset":
                 deleteCookie(request, response, CK_FIELD);
+                deleteCookie(request, response, CK_HINT);
                 response.sendRedirect("/");
                 break;
 

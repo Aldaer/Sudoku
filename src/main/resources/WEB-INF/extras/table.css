@@ -92,6 +92,10 @@ td.selected {
     color: black;
 }
 
+td.bad {
+    color: red;
+}
+
 h1 {
     text-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     text-align: center;
