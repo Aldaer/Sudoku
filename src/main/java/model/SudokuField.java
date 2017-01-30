@@ -6,8 +6,9 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.IntUnaryOperator;
 
-import static model.SudokuCell.HARDCODED;
+import static model.SudokuCell.*;
 
 @RequiredArgsConstructor
 public class SudokuField implements SudokuContainer {
@@ -24,17 +25,9 @@ public class SudokuField implements SudokuContainer {
     public boolean solved() {
         boolean slv = true;
         for (SudokuCell cell : cells) {
-            slv &= cell.definite();
+            slv &= cell.isDefinite();
         }
         return slv;
-    }
-
-    public boolean correct() {
-        return errorIndex() == -1;
-    }
-
-    private int errorIndex() {
-        return -1;
     }
 
     List<List<SudokuCell>> getSudokuBlocks() {
@@ -88,7 +81,7 @@ public class SudokuField implements SudokuContainer {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 int strNum = (int) (textRepresentation[row].charAt(col)) - '0';
-                int num = (strNum > 0 && strNum < 10) ? HARDCODED + strNum : 0;
+                int num = (strNum < 0 || strNum > 9) ? 0 : hardcodedValue(strNum);
                 values[row * 9 + col] = num;
             }
         }
@@ -155,34 +148,34 @@ public class SudokuField implements SudokuContainer {
         try {
             int cellNum = Integer.parseInt(cell);
             if (cellNum < 0 || cellNum > 80) return;
-            int val = 0;
-            if (!value.equals("")) val = Integer.parseInt(value);
+            int val = value.equals("") ? 0 : Integer.parseInt(value);
 
             if (val < 0 || val > 9) return;
-            if (val != 0) val += 0x10_0000;
+            if (val != 0) val = SudokuCell.definiteValue(val);
             cells[cellNum].value = val;
         } catch (NumberFormatException ignored) {
         }
     }
 
     public void generateHints() {
-        for (int i = 0; i < 81; i++) {
-            if (!cells[i].definite()) cells[i].value = 0x01FF;
-        }
+        for (SudokuCell cell : cells)
+            cell.value |= HINT_MASK;
 
         for (List<SudokuCell> sBlock : getSudokuBlocks()) {
-            int unused = 0x01FF;
+            int unused = 0xFFFFFFFF;
             for (SudokuCell cell : sBlock)
-                if (cell.definite())
-                    unused &= ~(1 << (cell.getDefValue() - 1));
-            for (SudokuCell cell: sBlock)
-                if (!cell.definite())
-                    cell.value &= unused;
+                unused &= ~(1 << cell.getDefValue() >> 1);
+            for (SudokuCell cell : sBlock)
+                cell.value &= unused;
         }
     }
 
-    public void clearHints() {
-        for (int i = 0; i < 81; i++)
-            if (!cells[i].definite()) cells[i].value = 0;
+    private static final IntUnaryOperator ACTIVATE_HINTS = v -> v |= HINT_ON;
+    private static final IntUnaryOperator DEACTIVATE_HINTS = v -> v &= ~HINT_ON;
+
+    public void setHintMode(boolean show) {
+        final IntUnaryOperator op = show ? ACTIVATE_HINTS : DEACTIVATE_HINTS;
+        for (SudokuCell cell : cells)
+            cell.value = op.applyAsInt(cell.value);
     }
 }

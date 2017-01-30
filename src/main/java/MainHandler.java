@@ -20,7 +20,8 @@ class MainHandler extends AbstractHandler {
     private final LocalSudokuServer serverInstance;
 
     private final Matcher tMatcher = getMainTemplateMatcher();
-    private static final String FIELD = "field";
+    private static final String CK_FIELD = "field";
+    private static final String CK_HINT = "hint";
 
     private static Matcher getMainTemplateMatcher() {
         try {
@@ -38,28 +39,27 @@ class MainHandler extends AbstractHandler {
         System.out.printf("Handling HTTP request on target: [%s]\n", target);
         switch (target) {
             case "/":
-                final SudokuField playingField = getCookieByName(request.getCookies(), FIELD)
+                final SudokuField playingField = getCookieByName(request.getCookies(), CK_FIELD)
                         .map(Cookie::getValue)
                         .map(SudokuField::new).orElse(SudokuField.getDefaultField());
-                final Cookie numberC = getCookieByName(request.getCookies(), "number").orElse(new Cookie("number", "0"));
-                numberC.setValue(String.valueOf(Integer.parseInt(numberC.getValue()) + 1));
-                System.out.println("Request: " + numberC.getValue());
-                response.addCookie(numberC);
 
                 final String cell = request.getParameter("cell");
                 final String value = request.getParameter("value");
 
                 if (cell != null && value != null) try {
                     playingField.setCellValue(cell, value);
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
 
-                if ("on".equals(request.getParameter("hint")))
-                    playingField.generateHints();
-                else
-                    playingField.clearHints();
+                setHintMode(request, response, playingField);
 
                 generateResponse(playingField, request, response);
                 break;
+            case "/reset":
+                deleteCookie(request, response, CK_FIELD);
+                response.sendRedirect("/");
+                break;
+
             case "/terminate":
                 killServer(response);
                 break;
@@ -69,13 +69,42 @@ class MainHandler extends AbstractHandler {
         baseRequest.setHandled(true);
     }
 
+    private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
+        getCookieByName(request.getCookies(), name).ifPresent(c -> {
+                    c.setMaxAge(0);
+                    response.addCookie(c);
+                }
+        );
+    }
+
+    private void setHintMode(HttpServletRequest request, HttpServletResponse response, SudokuField playingField) {
+        boolean showHints = getCookieByName(request.getCookies(), CK_HINT)
+                .map(Cookie::getValue)
+                .map("on"::equals)
+                .orElse(false);
+
+        if (request.getMethod().equals("POST")) {
+            if ("on".equals(request.getParameter("hint"))) {
+                System.out.println("Hints on");
+                playingField.setHintMode(true);
+                playingField.generateHints();
+                response.addCookie(new Cookie(CK_HINT, "on"));
+            } else {
+                System.out.println("Hints off");
+                playingField.setHintMode(false);
+                response.addCookie(new Cookie(CK_HINT, "off"));
+            }
+        } else
+            playingField.setHintMode(showHints);
+    }
+
     private void generateResponse(SudokuField playingField, HttpServletRequest request, HttpServletResponse response) throws IOException {
         StringBuilder responseTable = new StringBuilder();
         playingField.appendHtml(responseTable);
 
         final String responseHtml = tMatcher.replaceAll(responseTable.toString());
 
-        response.addCookie(new Cookie(FIELD, playingField.serialize()));
+        response.addCookie(new Cookie(CK_FIELD, playingField.serialize()));
 
         try (PrintWriter writer = response.getWriter()) {
             writer.print(responseHtml);

@@ -11,6 +11,7 @@ public class LocalSudokuServer extends Thread {
     @Override
     public void run() {
         try {
+            @SuppressWarnings("ConstantConditions")
             String webDir = this.getClass().getClassLoader().getResource("WEB-INF").toExternalForm();
 
             ResourceHandler res = new ResourceHandler();
@@ -24,8 +25,6 @@ public class LocalSudokuServer extends Thread {
                     });
             server.setHandler(hList);
             server.start();
-            server.join();
-            System.out.println("Exiting now...");
         } catch (Exception e) {
             System.out.println("Error running server" );
             e.printStackTrace();

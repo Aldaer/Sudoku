@@ -114,10 +114,11 @@
         </tr>
         </tbody>
     </table>
-    <form>
+    <form method="post">
         <button id="coords">***</button><input name="value" type="text">
         <input name="cell" type="hidden">
         <input name="hint" type="checkbox" onclick="submit();">Show hints
+        <button formaction="/reset">Reset field</button>
         <button formaction="/terminate" style="color: red">Kill server</button>
     </form>
 </div>
