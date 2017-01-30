@@ -1,4 +1,3 @@
-import model.SudokuElement;
 import model.SudokuField;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
@@ -12,13 +11,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-public class MainHandler extends AbstractHandler {
+class MainHandler extends AbstractHandler {
     private final LocalSudokuServer serverInstance;
 
     private final Matcher tMatcher = getMainTemplateMatcher();
+    private static final String FIELD = "field";
 
     private static Matcher getMainTemplateMatcher() {
         try {
@@ -36,8 +38,27 @@ public class MainHandler extends AbstractHandler {
         System.out.printf("Handling HTTP request on target: [%s]\n", target);
         switch (target) {
             case "/":
-            case "/hint":
-                generateResponse(request, response);
+                final SudokuField playingField = getCookieByName(request.getCookies(), FIELD)
+                        .map(Cookie::getValue)
+                        .map(SudokuField::new).orElse(SudokuField.getDefaultField());
+                final Cookie numberC = getCookieByName(request.getCookies(), "number").orElse(new Cookie("number", "0"));
+                numberC.setValue(String.valueOf(Integer.parseInt(numberC.getValue()) + 1));
+                System.out.println("Request: " + numberC.getValue());
+                response.addCookie(numberC);
+
+                final String cell = request.getParameter("cell");
+                final String value = request.getParameter("value");
+
+                if (cell != null && value != null) try {
+                    playingField.setCellValue(cell, value);
+                } catch (NumberFormatException ignored) {}
+
+                if ("on".equals(request.getParameter("hint")))
+                    playingField.generateHints();
+                else
+                    playingField.clearHints();
+
+                generateResponse(playingField, request, response);
                 break;
             case "/terminate":
                 killServer(response);
@@ -48,31 +69,25 @@ public class MainHandler extends AbstractHandler {
         baseRequest.setHandled(true);
     }
 
-    private void generateResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        final Cookie[] cookies = request.getCookies();
-
+    private void generateResponse(SudokuField playingField, HttpServletRequest request, HttpServletResponse response) throws IOException {
         StringBuilder responseTable = new StringBuilder();
-        getPlayingField(cookies).appendHtml(responseTable);
+        playingField.appendHtml(responseTable);
 
         final String responseHtml = tMatcher.replaceAll(responseTable.toString());
+
+        response.addCookie(new Cookie(FIELD, playingField.serialize()));
+
         try (PrintWriter writer = response.getWriter()) {
             writer.print(responseHtml);
             response.setStatus(HttpServletResponse.SC_OK);
         }
     }
 
-    private SudokuElement getPlayingField(Cookie[] cookies) {
-        String[] sx = {
-                "--179-2-6",
-                "73-21-98-",
-                "926-543--",
-                "-781-5-9-",
-                "31-489--7",
-                "54---7128",
-                "1-7-62-5-",
-                "--5971-3-",
-                "2635--7--"};
-        return new SudokuField(sx);
+    private Optional<Cookie> getCookieByName(Cookie[] cookies, String name) {
+        if (cookies == null) return Optional.empty();
+        return Stream.of(cookies)
+                .filter(c -> c.getName().equals(name))
+                .findAny();
     }
 
     private void killServer(HttpServletResponse response) throws IOException {
@@ -85,7 +100,7 @@ public class MainHandler extends AbstractHandler {
         }
     }
 
-    public MainHandler(LocalSudokuServer serverInstance) {
+    MainHandler(LocalSudokuServer serverInstance) {
         this.serverInstance = serverInstance;
     }
 }

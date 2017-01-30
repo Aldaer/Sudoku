@@ -50,6 +50,7 @@ td {
     padding: 1px;
     transition: all 0.2s;
     text-align: center;
+    color: #1a9609;
 }
 
 table table td:last-child {
@@ -82,10 +83,13 @@ td.selected {
 }
 
 .hint {
-    word-wrap: normal;
-    font-size: small;
-    padding: 2px;
+    font-size: x-small;
     color: blue;
+}
+
+.hard {
+    font-weight: bold;
+    color: black;
 }
 
 h1 {

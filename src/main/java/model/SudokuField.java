@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static model.SudokuCell.HARDCODED;
+
 @RequiredArgsConstructor
 public class SudokuField implements SudokuContainer {
     final SudokuCell[] cells = new SudokuCell[81];
@@ -31,7 +33,7 @@ public class SudokuField implements SudokuContainer {
         return errorIndex() == -1;
     }
 
-    int errorIndex() {
+    private int errorIndex() {
         return -1;
     }
 
@@ -55,7 +57,7 @@ public class SudokuField implements SudokuContainer {
     }
 
 
-    SudokuField(String serialized) {
+    public SudokuField(String serialized) {
         this(decode(serialized));
     }
 
@@ -75,18 +77,18 @@ public class SudokuField implements SudokuContainer {
         return values;
     }
 
-    public SudokuField(String[] textRepresentation) {
-        this(destring(textRepresentation));
+    SudokuField(String[] textRepresentation) {
+        this(buildFromText(textRepresentation));
     }
 
-    private static int[] destring(String[] textRepresentation) {
+    private static int[] buildFromText(String[] textRepresentation) {
         assert textRepresentation.length == 9;
 
         int[] values = new int[81];
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 int strNum = (int) (textRepresentation[row].charAt(col)) - '0';
-                int num = (strNum > 0 && strNum < 10) ? 1_100_000_000 + strNum : 0;
+                int num = (strNum > 0 && strNum < 10) ? HARDCODED + strNum : 0;
                 values[row * 9 + col] = num;
             }
         }
@@ -123,7 +125,7 @@ public class SudokuField implements SudokuContainer {
         }
     }
 
-    String serialize() {
+    public String serialize() {
         final byte[] bytes = new byte[324];
         for (int i = 0; i < 81; i++) {
             int x = cells[i].value;
@@ -133,5 +135,54 @@ public class SudokuField implements SudokuContainer {
             }
         }
         return new String(Base64.getEncoder().encode(bytes));
+    }
+
+    public static SudokuField getDefaultField() {
+        String[] sx = {
+                "--179-2-6",
+                "73-21-98-",
+                "926-543--",
+                "-781-5-9-",
+                "31-489--7",
+                "54---7128",
+                "1-7-62-5-",
+                "--5971-3-",
+                "2635--7--"};
+        return new SudokuField(sx);
+    }
+
+    public void setCellValue(String cell, String value) {
+        try {
+            int cellNum = Integer.parseInt(cell);
+            if (cellNum < 0 || cellNum > 80) return;
+            int val = 0;
+            if (!value.equals("")) val = Integer.parseInt(value);
+
+            if (val < 0 || val > 9) return;
+            if (val != 0) val += 0x10_0000;
+            cells[cellNum].value = val;
+        } catch (NumberFormatException ignored) {
+        }
+    }
+
+    public void generateHints() {
+        for (int i = 0; i < 81; i++) {
+            if (!cells[i].definite()) cells[i].value = 0x01FF;
+        }
+
+        for (List<SudokuCell> sBlock : getSudokuBlocks()) {
+            int unused = 0x01FF;
+            for (SudokuCell cell : sBlock)
+                if (cell.definite())
+                    unused &= ~(1 << (cell.getDefValue() - 1));
+            for (SudokuCell cell: sBlock)
+                if (!cell.definite())
+                    cell.value &= unused;
+        }
+    }
+
+    public void clearHints() {
+        for (int i = 0; i < 81; i++)
+            if (!cells[i].definite()) cells[i].value = 0;
     }
 }

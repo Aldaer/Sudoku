@@ -29,8 +29,8 @@ public class SudokuFieldTest {
 
     @Test
     public void testCreation1() throws Exception {
-        assertThat(field.cells[29].value % 10, is(8));
-        assertThat(field.cells[66].value % 10, is(9));
+        assertThat(field.cells[29].getDefValue(), is(8));
+        assertThat(field.cells[66].getDefValue(), is(9));
     }
 
     @Test
@@ -43,10 +43,7 @@ public class SudokuFieldTest {
 
     private String serializeBlock(List<SudokuCell> block) {
         final StringBuilder str = new StringBuilder(9);
-/*        block.stream()
-                .mapToInt(SudokuCell::getDefValue)
-                .map(x -> x == 0? '-' : x + '0')
-                .forEachOrdered(str::append);*/
+
         for (SudokuCell sudokuCell : block) {
             int x = sudokuCell.getDefValue();
             char c = x == 0 ? '-' : (char) (x + '0');

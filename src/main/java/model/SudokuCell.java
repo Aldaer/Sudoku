@@ -4,19 +4,21 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 class SudokuCell implements SudokuElement {
+    private static final int DEFINITE = 0x10_0000;
+    static final int HARDCODED = 0x11_0000;
     private final int index;
     int value = 987654321;
 
     boolean definite() {
-        return value >= 1_000_000_000;
+        return value >= DEFINITE;
     }
 
-    boolean hardcoded() {
-        return value >= 1_100_000_000;
+    private boolean hardcoded() {
+        return value >= HARDCODED;
     }
 
     int getDefValue() {
-        return definite() ? value % 10 : 0;
+        return definite() ? value & 0xF : 0;
     }
 
     @Override
@@ -24,14 +26,13 @@ class SudokuCell implements SudokuElement {
         appendOpeningTag(builder);
 
         if (definite())
-            builder.append(value % 10);
+            builder.append(getDefValue());
         else {
             int x = value;
-            for (int i = 0; i < 9; i++) {
-                int z = x % 10;
-                if (z > 0) builder.append(z);
+            for (int i = 1; i < 10; i++) {
+                if ((x & 1) > 0) builder.append(i);
                 if (i == 3 || i == 6) builder.append("<br>");
-                x /= 10;
+                x >>= 1;
             }
         }
         builder.append("</td>");
@@ -42,10 +43,10 @@ class SudokuCell implements SudokuElement {
                 .append(index)
                 .append("\" ");
         if (hardcoded())
-            builder.append("class:\"hard\"");
+            builder.append("class=\"hard\"");
         else {
             builder.append("onclick=\"cellClick(this)\"");
-            if (!definite())
+            if (!definite() && value > 0)
                 builder.append(" class=\"hint\"");
         }
         builder.append(">");

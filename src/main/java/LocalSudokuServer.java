@@ -24,7 +24,8 @@ public class LocalSudokuServer extends Thread {
                     });
             server.setHandler(hList);
             server.start();
-            // server.join();
+            server.join();
+            System.out.println("Exiting now...");
         } catch (Exception e) {
             System.out.println("Error running server" );
             e.printStackTrace();

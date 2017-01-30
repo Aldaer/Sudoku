@@ -115,8 +115,9 @@
         </tbody>
     </table>
     <form>
-        <button id="coords">***</button><input type="text">
-        <button formaction="/hint" formtarget="_self">Get hint</button>
+        <button id="coords">***</button><input name="value" type="text">
+        <input name="cell" type="hidden">
+        <input name="hint" type="checkbox" onclick="submit();">Show hints
         <button formaction="/terminate" style="color: red">Kill server</button>
     </form>
 </div>
