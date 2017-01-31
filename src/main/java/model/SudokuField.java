@@ -49,6 +49,32 @@ public class SudokuField implements SudokuContainer {
         return result;
     }
 
+    private final int[][] affectingCellCache = new int[81][];
+
+    private int[] cellsAffectingCellAt(int index) {
+        synchronized (affectingCellCache) {
+            int[] affectingList = affectingCellCache[index];
+            if (affectingList != null) return affectingList;
+            affectingList = new int[24];
+            int r = 0;
+            int c = 8;
+            int b = 16;
+            int rowStart = (index / 9) * 9;
+            int colStart = index % 9;
+            int boxStart = (colStart / 3) * 3 + (rowStart / 27) * 27;
+            for (int i = 0; i < 9; i++) {
+                int rowI = rowStart + i;
+                int colI = colStart + i * 9;
+                int boxI = boxStart + i % 3 + (i / 3) * 9;
+                if (rowI != index) affectingList[r++] = rowI;
+                if (colI != index) affectingList[c++] = colI;
+                if (boxI != index) affectingList[b++] = boxI;
+            }
+            affectingCellCache[index] = affectingList;
+            return affectingList;
+        }
+    }
+
 
     public SudokuField(String serialized) {
         this(decode(serialized));
@@ -71,10 +97,10 @@ public class SudokuField implements SudokuContainer {
     }
 
     SudokuField(String[] textRepresentation) {
-        this(buildFromText(textRepresentation));
+        this(textToArray(textRepresentation));
     }
 
-    private static int[] buildFromText(String[] textRepresentation) {
+    private static int[] textToArray(String[] textRepresentation) {
         assert textRepresentation.length == 9;
 
         int[] values = new int[81];
@@ -157,24 +183,20 @@ public class SudokuField implements SudokuContainer {
     }
 
     public void generateHints() {
-        for (SudokuCell cell : cells)
+        for (SudokuCell cell : cells) {
             cell.value |= HINT_MASK;
-
-        for (List<SudokuCell> sBlock : getSudokuBlocks()) {
             int unused = 0xFFFFFFFF;
-            for (SudokuCell cell : sBlock)
-                unused &= ~(1 << cell.getDefValue() >> 1);
-            for (SudokuCell cell : sBlock)
-                cell.value &= unused;
+            for (int i : cellsAffectingCellAt(cell.index))
+                unused &= ~(1 << cells[i].getDefValue() >> 1);
+            cell.value &= unused;
         }
     }
 
-    private static final IntUnaryOperator ACTIVATE_HINTS = v -> v |= HINT_ON;
-    private static final IntUnaryOperator DEACTIVATE_HINTS = v -> v &= ~HINT_ON;
-
     public void setHintMode(boolean show) {
-        final IntUnaryOperator op = show ? ACTIVATE_HINTS : DEACTIVATE_HINTS;
+        final IntUnaryOperator toggleHint = show ?
+                v -> v |= HINT_ON :
+                v -> v &= ~HINT_ON;
         for (SudokuCell cell : cells)
-            cell.value = op.applyAsInt(cell.value);
+            cell.value = toggleHint.applyAsInt(cell.value);
     }
 }

@@ -8,14 +8,16 @@ import java.util.StringJoiner;
 
 @AllArgsConstructor
 class SudokuCell implements SudokuElement {
-    private static final int DEFINITE = 0x10_0_000;
-    private static final int HARDCODED = 0x11_0_000;
-    private static final int CLEAR_VAL = 0xFFFF_0_FFF;
+    //                              Reserved-\   /-Definite value or 0
+    //              Definite & hardcoded-\   |  |  /-"Hint On" bit and possible values (bitmask)
+    private static final int DEFINITE = 0x1_000_0_000;
+    private static final int HARDCODED = 0x3_000_0_000;
+    private static final int CLEAR_VAL = 0xFFFF0FFF;
 
     static final int HINT_MASK = 0x01FF;
     static final int HINT_ON = 0x0200;
 
-    private final int index;
+    final int index;
     int value;
 
     boolean isDefinite() {
@@ -75,21 +77,17 @@ class SudokuCell implements SudokuElement {
         builder.append(">");
     }
 
-    private boolean illegalNumber() {
+    private boolean illegalNumber() {       // Not checked for hardcoded cells
         if (! (isDefinite() && isHinted())) return false;
         int bitVal = 1 << getDefValue() >> 1;
         return (bitVal & value) == 0;
     }
 
     static int hardcodedValue(int x) {
-        return HARDCODED + (x << 12);
-    }
-
-    private static int definiteValue(int x) {
-        return DEFINITE + (x << 12);
+        return HARDCODED | (x << 12);
     }
 
     void setDefiniteValue(int newVal) {
-        value = newVal != 0 ? (value & CLEAR_VAL) | (newVal << 12) | DEFINITE : 0;
+        value = newVal != 0 ? (value & CLEAR_VAL) | DEFINITE | (newVal << 12) : 0;
     }
 }
