@@ -52,8 +52,9 @@ public class SudokuField implements SudokuContainer {
     private final int[][] affectingCellCache = new int[81][];
 
     private int[] cellsAffectingCellAt(int index) {
+        int[] affectingList;
         synchronized (affectingCellCache) {
-            int[] affectingList = affectingCellCache[index];
+            affectingList = affectingCellCache[index];
             if (affectingList != null) return affectingList;
             affectingList = new int[24];
             int r = 0;
@@ -71,8 +72,8 @@ public class SudokuField implements SudokuContainer {
                 if (boxI != index) affectingList[b++] = boxI;
             }
             affectingCellCache[index] = affectingList;
-            return affectingList;
         }
+        return affectingList;
     }
 
 
@@ -105,6 +106,8 @@ public class SudokuField implements SudokuContainer {
 
         int[] values = new int[81];
         for (int row = 0; row < 9; row++) {
+            assert textRepresentation[row].length() == 9;
+
             for (int col = 0; col < 9; col++) {
                 int strNum = (int) (textRepresentation[row].charAt(col)) - '0';
                 int num = (strNum < 0 || strNum > 9) ? 0 : hardcodedValue(strNum);
@@ -112,6 +115,17 @@ public class SudokuField implements SudokuContainer {
             }
         }
         return values;
+    }
+
+    private static final int[] HTML_WALK_INDEX = generateHtmlTableWalkIndex();
+
+    // Converts row-column indexing of the text representation into box-by-box thorough indexing of the html
+    private static int[] generateHtmlTableWalkIndex() {
+        int[] index = new int[81];
+        for (int row = 0; row < 9; row++)
+            for (int col = 0; col < 9; col++)
+                index[row * 9 + col] = (row / 3) * 27 + (row % 3) * 3 + (col / 3) * 9 + col % 3;
+        return index;
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -123,9 +137,7 @@ public class SudokuField implements SudokuContainer {
         SudokuContainer bigCell;
         SudokuContainer bigRow = null;
 
-        for (int i = 0; i < 81; i++) {
-            cells[i] = new SudokuCell(i, values[i]);
-
+      for (int i = 0; i < 81; i++) {
             if (i % 27 == 0) {
                 bigRow = new SudokuContainerImpl("tr");
                 contents.add(bigRow);
@@ -140,7 +152,9 @@ public class SudokuField implements SudokuContainer {
                 smallRow = new SudokuContainerImpl("tr");
                 box.getContents().add(smallRow);
             }
-            smallRow.getContents().add(cells[i]);
+            int ix = HTML_WALK_INDEX[i];
+            cells[ix] = new SudokuCell(ix, values[ix]);
+            smallRow.getContents().add(cells[ix]);
         }
     }
 
@@ -185,10 +199,10 @@ public class SudokuField implements SudokuContainer {
     public void generateHints() {
         for (SudokuCell cell : cells) {
             cell.value |= HINT_MASK;
-            int unused = 0xFFFFFFFF;
+            int used = 0;
             for (int i : cellsAffectingCellAt(cell.index))
-                unused &= ~(1 << cells[i].getDefValue() >> 1);
-            cell.value &= unused;
+                used |= 1 << cells[i].getDefValue() >> 1;
+            cell.value &= ~used;
         }
     }
 

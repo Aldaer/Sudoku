@@ -7,6 +7,11 @@ body {
     font-family: "Open Sans", sans-serif;
 }
 
+h1 {
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
 table {
     border-collapse: collapse;
     border: 1px solid #38678f;
@@ -19,6 +24,7 @@ table {
 table table td {
     width: 33%;
     height: 33%;
+    font-style: italic;
 }
 
 table table td:hover {
@@ -85,18 +91,16 @@ td.selected {
 .hint {
     font-size: x-small;
     color: blue;
+    font-style: normal;
 }
 
 .hard {
     font-weight: bold;
     color: black;
+    font-style: normal;
 }
 
 table table td.bad {
     color: red;
 }
 
-h1 {
-    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
