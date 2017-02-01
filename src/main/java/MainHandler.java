@@ -36,38 +36,46 @@ class MainHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        System.out.printf("Handling HTTP request on target: [%s]\n", target);
         switch (target) {
             case "/":
-                final SudokuField playingField = getCookieByName(request.getCookies(), CK_FIELD)
-                        .map(Cookie::getValue)
-                        .map(SudokuField::new).orElse(SudokuField.getDefaultField());
-
-                final String cell = request.getParameter("cell");
-                final String value = request.getParameter("value");
-
-                if (cell != null && value != null) try {
-                    playingField.setCellValue(cell, value);
-                } catch (NumberFormatException ignored) {
-                }
-
-                setHintMode(request, response, playingField);
-
-                generateResponse(playingField, request, response);
+                processNormalRequest(request, response);
                 break;
+
             case "/reset":
-                deleteCookie(request, response, CK_FIELD);
-                deleteCookie(request, response, CK_HINT);
-                response.sendRedirect("/");
+                resetField(request, response);
                 break;
 
             case "/terminate":
                 killServer(response);
                 break;
-            default:
+            default:    // Pass-through to file server
                 return;
         }
         baseRequest.setHandled(true);
+    }
+
+    private void resetField(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        deleteCookie(request, response, CK_FIELD);
+        deleteCookie(request, response, CK_HINT);
+        response.sendRedirect("/");
+    }
+
+    private void processNormalRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final SudokuField playingField = getCookieByName(request.getCookies(), CK_FIELD)
+                .map(Cookie::getValue)
+                .map(SudokuField::new).orElse(SudokuField.getDefaultField());
+
+        final String cell = request.getParameter("cell");
+        final String value = request.getParameter("value");
+
+        if (cell != null && value != null) try {
+            playingField.setCellValue(cell, value);
+        } catch (NumberFormatException ignored) {
+        }
+
+        setHintMode(request, response, playingField);
+
+        generateResponse(playingField, request, response);
     }
 
     private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
@@ -123,7 +131,7 @@ class MainHandler extends AbstractHandler {
     private void killServer(HttpServletResponse response) throws IOException {
         try (PrintWriter writer = response.getWriter()) {
             writer.println("Stopping Jetty server");
-            response.setStatus(HttpServletResponse.SC_OK);
+            writer.close();
             serverInstance.server.stop();
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

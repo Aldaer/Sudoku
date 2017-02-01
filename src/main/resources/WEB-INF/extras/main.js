@@ -1,4 +1,4 @@
-const NUMPAD = $(".setnumber");
+const NUMPAD = $("#numpad");
 
 function cellClick(el) {
     $('td').removeClass("selected");
@@ -7,13 +7,17 @@ function cellClick(el) {
     $('input[name="cell"]').val(cellid);
     $(el).addClass("selected");
     $(el).append(NUMPAD);
-    NUMPAD.removeClass("hidden");
-    NUMPAD.css("display", "inherit");
+    NUMPAD.addClass("popup");
 }
 
-function hidePad() {
-    alert("Hiding");
-    NUMPAD.addClass("hidden");
+function hidePad(event) {
+    NUMPAD.removeClass("popup");
+    event.stopPropagation();
+}
+
+function numpush(event) {
+    alert("Number pushed: " + alert(event.target.innerText));
+    event.stopPropagation();
 }
 
 if ($('.hint').length) $('input[name="hint"]').prop("checked", true);

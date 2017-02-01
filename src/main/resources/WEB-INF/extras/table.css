@@ -116,11 +116,12 @@ td.selected {
     font-size: small;
     cursor: crosshair;
     width: 33%;
+    height: 28%;
     margin: 0;
 }
 
-.hidden {
-    display: none;
+.popup {
+    display: inherit !important;
 }
 
 table table td.bad {
