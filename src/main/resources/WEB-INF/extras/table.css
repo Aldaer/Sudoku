@@ -27,7 +27,7 @@ table table td {
     font-style: italic;
 }
 
-table table td:hover {
+td:hover {
     background: rgba(39, 124, 255, 0.11);
 }
 
@@ -98,6 +98,29 @@ td.selected {
     font-weight: bold;
     color: black;
     font-style: normal;
+}
+
+.setnumber {
+    display: none;
+    position: fixed;
+    background: #277cff;
+}
+.setnumber table {
+    width: 120px;
+    height: 145px;
+    margin: 2px;
+}
+
+.setnumber td {
+    color: black;
+    font-size: small;
+    cursor: crosshair;
+    width: 33%;
+    margin: 0;
+}
+
+.hidden {
+    display: none;
 }
 
 table table td.bad {
