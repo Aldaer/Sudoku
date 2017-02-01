@@ -114,12 +114,12 @@
         </tr>
         </tbody>
     </table>
-    <form method="post">
-        <button id="coords">***</button><input name="value" type="text">
-        <input name="cell" type="hidden">
+    <form id="set" method="post">
         <input name="hint" type="checkbox" onclick="submit();">Show hints
         <button formaction="/reset">Reset field</button>
         <button formaction="/terminate" style="color: red">Kill server</button>
+        <input name="cell" type="hidden">
+        <input name="value" type="hidden">
     </form>
     <div id="numpad" class="setnumber">
         <table onclick="numpush(event)">

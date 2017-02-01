@@ -36,6 +36,7 @@ class MainHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        System.out.printf("Processing: [%s]%n", target);
         switch (target) {
             case "/":
                 processNormalRequest(request, response);
