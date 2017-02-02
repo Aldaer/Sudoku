@@ -13,6 +13,8 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok:+'
 
+    testCompile 'org.apache.httpcomponents:httpcore:+'
+    testCompile 'org.apache.httpcomponents:httpmime:+'
     testCompile 'junit:junit:+'
 }
 

@@ -11,24 +11,26 @@ public class LocalSudokuServer extends Thread {
     @Override
     public void run() {
         try {
-            @SuppressWarnings("ConstantConditions")
-            String webDir = this.getClass().getClassLoader().getResource("WEB-INF").toExternalForm();
-
-            ResourceHandler res = new ResourceHandler();
-            res.setResourceBase(webDir);
-            res.setDirAllowed(true);
-
             HandlerList hList = new HandlerList();
-            hList.setHandlers(new Handler[]{
-                    new MainHandler(this),
-                    res
-                    });
+            hList.setHandlers(createHandlers());
             server.setHandler(hList);
             server.start();
         } catch (Exception e) {
-            System.out.println("Error running server" );
+            System.out.println("Error running server");
             e.printStackTrace();
         }
+    }
+
+    Handler[] createHandlers() {
+        ResourceHandler res = new ResourceHandler();
+        @SuppressWarnings("ConstantConditions")
+        String webDir = this.getClass().getClassLoader().getResource("WEB-INF").toExternalForm();
+        res.setResourceBase(webDir);
+        res.setDirAllowed(true);
+
+        Handler main = new MainHandler(this);
+
+        return new Handler[]{main, res};
     }
 
     public static void main(String[] args) {

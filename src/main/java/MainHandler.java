@@ -1,3 +1,4 @@
+import lombok.RequiredArgsConstructor;
 import model.FieldLoader;
 import model.SudokuField;
 import org.apache.commons.io.IOUtils;
@@ -19,8 +20,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+@RequiredArgsConstructor
 class MainHandler extends AbstractHandler {
-    private final MultipartConfigElement MPCE = new MultipartConfigElement("/tmp");
+    private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
+    private final MultipartConfigElement MPCE = new MultipartConfigElement(TMP_DIR);
 
     private final LocalSudokuServer serverInstance;
 
@@ -41,7 +44,10 @@ class MainHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MPCE);
+        Optional.ofNullable(request
+                .getContentType())
+                .filter(t -> t.startsWith("multipart"))
+                .ifPresent(t -> baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MPCE));
 
         System.out.printf("Processing: [%s]%n", target);
         switch (target) {
@@ -54,21 +60,21 @@ class MainHandler extends AbstractHandler {
                 break;
 
             case "/load":
-//                baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MPCE);
                 loadField(request, response);
                 break;
 
             case "/terminate":
                 killServer(response);
                 break;
-            default:        // Will be overwritten by File server when accessing existing files
+            default:
                 if (mustPassToFileServer(target)) return;
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
         baseRequest.setHandled(true);
     }
 
-    private void loadField(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    void loadField(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        // TODO: really implement
         request.getParts().stream()
                 .map(Part::getName)
                 .forEach(System.out::println);
@@ -150,7 +156,7 @@ class MainHandler extends AbstractHandler {
         }
     }
 
-    private Optional<Cookie> getCookieByName(Cookie[] cookies, String name) {
+    private static Optional<Cookie> getCookieByName(Cookie[] cookies, String name) {
         if (cookies == null) return Optional.empty();
         return Stream.of(cookies)
                 .filter(c -> c.getName().equals(name))
@@ -167,7 +173,4 @@ class MainHandler extends AbstractHandler {
         }
     }
 
-    MainHandler(LocalSudokuServer serverInstance) {
-        this.serverInstance = serverInstance;
-    }
 }
