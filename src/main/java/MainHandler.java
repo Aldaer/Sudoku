@@ -4,10 +4,12 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -18,6 +20,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 class MainHandler extends AbstractHandler {
+    private final MultipartConfigElement MPCE = new MultipartConfigElement("/tmp");
+
     private final LocalSudokuServer serverInstance;
 
     private final Matcher tMatcher = getMainTemplateMatcher();
@@ -37,6 +41,8 @@ class MainHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MPCE);
+
         System.out.printf("Processing: [%s]%n", target);
         switch (target) {
             case "/":
@@ -47,6 +53,11 @@ class MainHandler extends AbstractHandler {
                 resetField(request, response);
                 break;
 
+            case "/load":
+//                baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MPCE);
+                loadField(request, response);
+                break;
+
             case "/terminate":
                 killServer(response);
                 break;
@@ -55,6 +66,14 @@ class MainHandler extends AbstractHandler {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
         baseRequest.setHandled(true);
+    }
+
+    private void loadField(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        request.getParts().stream()
+                .map(Part::getName)
+                .forEach(System.out::println);
+
+        response.sendRedirect("/");
     }
 
     private boolean mustPassToFileServer(String target) {
