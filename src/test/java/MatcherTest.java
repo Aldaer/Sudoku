@@ -13,7 +13,7 @@ public class MatcherTest {
     private final Matcher templateMatcher = Pattern.compile("<tbody>.*</tbody>", Pattern.DOTALL).matcher(mainTemplate);
 
     @Test
-    public void testMatchReplace() throws Exception {
+    public void multilineMatchReplace() throws Exception {
         assertThat(templateMatcher.replaceAll("<tbody>ABC</tbody>"), is(expected));
     }
 }

@@ -1,4 +1,5 @@
 const NUMPAD = $("#numpad");
+const SET_FORM = $("#set");
 
 function cellClick(el) {
     $('td').removeClass("selected");
@@ -23,7 +24,7 @@ function numpush(event) {
 function submitKey(x) {
     $('input[name="cell"]').val(NUMPAD.data("id"));
     $('input[name="value"]').val(x);
-    $('form').submit();
+    SET_FORM.submit();
 }
 
 if ($('.hint').length) $('input[name="hint"]').prop("checked", true);

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.IntUnaryOperator;
+import java.util.stream.IntStream;
 
 import static model.SudokuCell.HINT_MASK;
 import static model.SudokuCell.HINT_ON;
@@ -35,7 +36,7 @@ public class SudokuField implements SudokuContainer {
                 .allMatch(cell -> Arrays.stream(cellsAffectingCellAt(cell.index))
                         .mapToObj(i -> cells[i])
                         .mapToInt(SudokuCell::getDefValue)
-                        .noneMatch(value ->  cell.getDefValue() == value)
+                        .noneMatch(value -> cell.getDefValue() == value)
                 );
     }
 
@@ -168,5 +169,9 @@ public class SudokuField implements SudokuContainer {
                 v -> v &= ~HINT_ON;
         for (SudokuCell cell : cells)
             cell.value = toggleHint.applyAsInt(cell.value);
+    }
+
+    boolean valuesEqual(SudokuField f) {
+        return IntStream.range(0, 81).allMatch(i -> cells[i].getDefValue() == f.cells[i].getDefValue());
     }
 }

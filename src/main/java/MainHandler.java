@@ -51,9 +51,16 @@ class MainHandler extends AbstractHandler {
                 killServer(response);
                 break;
             default:        // Will be overwritten by File server when accessing existing files
+                if (mustPassToFileServer(target)) return;
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
         baseRequest.setHandled(true);
+    }
+
+    private boolean mustPassToFileServer(String target) {
+        Stream<String> knownFileExt = Stream.of(".htm", ".html", ".css", ".js", ".gif", ".png", ".jpg");
+        final String s = target.toLowerCase();
+        return knownFileExt.anyMatch(s::endsWith);
     }
 
     private void resetField(HttpServletRequest request, HttpServletResponse response) throws IOException {

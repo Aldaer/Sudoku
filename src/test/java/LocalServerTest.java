@@ -10,7 +10,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class LocalServerTest {
-    final static LocalSudokuServer server = new LocalSudokuServer();
+    private final static LocalSudokuServer server = new LocalSudokuServer();
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -18,7 +18,7 @@ public class LocalServerTest {
     }
 
     @Test
-    public void testLocalConnection() throws Exception {
+    public void getFromLocalConnection() throws Exception {
         URL url = new URL("http", "localhost", LocalSudokuServer.PORT, "/");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
