@@ -64,7 +64,7 @@ class SudokuCell implements SudokuElement {
         else {
             builder.append("onclick=\"cellClick(this)\" ");
 
-            if (illegalNumber()) classList.add("bad");
+            if (contradictsHint()) classList.add("bad");
             if (isHinted() & !isDefinite()) classList.add("hint");
         }
         if (classList.size() > 0) {
@@ -77,7 +77,7 @@ class SudokuCell implements SudokuElement {
         builder.append(">");
     }
 
-    private boolean illegalNumber() {       // Not checked for hardcoded cells
+    private boolean contradictsHint() {       // Not checked for hardcoded cells
         if (! (isDefinite() && isHinted())) return false;
         int bitVal = 1 << getDefValue() >> 1;
         return (bitVal & value) == 0;

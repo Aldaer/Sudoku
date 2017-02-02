@@ -4,11 +4,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.IntUnaryOperator;
 
-import static model.SudokuCell.*;
+import static model.SudokuCell.HINT_MASK;
+import static model.SudokuCell.HINT_ON;
 
 @RequiredArgsConstructor
 public class SudokuField implements SudokuContainer {
@@ -22,31 +24,19 @@ public class SudokuField implements SudokuContainer {
         return "tbody";
     }
 
-    public boolean solved() {
-        boolean slv = true;
-        for (SudokuCell cell : cells) {
-            slv &= cell.isDefinite();
-        }
-        return slv;
+    public boolean isFilled() {
+        return Arrays.stream(cells)
+                .allMatch(SudokuCell::isDefinite);
     }
 
-    List<List<SudokuCell>> getSudokuBlocks() {
-        List<List<SudokuCell>> result = new ArrayList<>(27);
-        for (int i = 0; i < 9; i++) {
-            List<SudokuCell> row = new ArrayList<>(9);
-            List<SudokuCell> col = new ArrayList<>(9);
-            List<SudokuCell> box = new ArrayList<>(9);
-            int boxStart = (i % 3) * 3 + (i / 3) * 27;                  // 0 3 6 27 30 33 54 57 60
-            for (int j = 0; j < 9; j++) {
-                row.add(cells[i * 9 + j]);
-                col.add(cells[i + j * 9]);
-                box.add(cells[boxStart + j % 3 + (j / 3) * 9]);        // 0 1 2 9 10 11 18 19 20
-            }
-            result.add(row);
-            result.add(col);
-            result.add(box);
-        }
-        return result;
+    public boolean isValid() {
+        return Arrays.stream(cells)
+                .filter(SudokuCell::isDefinite)
+                .allMatch(cell -> Arrays.stream(cellsAffectingCellAt(cell.index))
+                        .mapToObj(i -> cells[i])
+                        .mapToInt(SudokuCell::getDefValue)
+                        .noneMatch(value ->  cell.getDefValue() == value)
+                );
     }
 
     private final int[][] affectingCellCache = new int[81][];
@@ -97,26 +87,6 @@ public class SudokuField implements SudokuContainer {
         return values;
     }
 
-    SudokuField(String[] textRepresentation) {
-        this(textToArray(textRepresentation));
-    }
-
-    private static int[] textToArray(String[] textRepresentation) {
-        assert textRepresentation.length == 9;
-
-        int[] values = new int[81];
-        for (int row = 0; row < 9; row++) {
-            assert textRepresentation[row].length() == 9;
-
-            for (int col = 0; col < 9; col++) {
-                int strNum = (int) (textRepresentation[row].charAt(col)) - '0';
-                int num = (strNum < 0 || strNum > 9) ? 0 : hardcodedValue(strNum);
-                values[row * 9 + col] = num;
-            }
-        }
-        return values;
-    }
-
     private static final int[] HTML_WALK_INDEX = generateHtmlTableWalkIndex();
 
     // Converts row-column indexing of the text representation into box-by-box thorough indexing of the html
@@ -129,7 +99,7 @@ public class SudokuField implements SudokuContainer {
     }
 
     @SuppressWarnings("ConstantConditions")
-    private SudokuField(int[] values) {
+    SudokuField(int[] values) {
         assert values.length == 81;
 
         SudokuContainer smallRow = null;
@@ -137,7 +107,7 @@ public class SudokuField implements SudokuContainer {
         SudokuContainer bigCell;
         SudokuContainer bigRow = null;
 
-      for (int i = 0; i < 81; i++) {
+        for (int i = 0; i < 81; i++) {
             if (i % 27 == 0) {
                 bigRow = new SudokuContainerImpl("tr");
                 contents.add(bigRow);
@@ -168,20 +138,6 @@ public class SudokuField implements SudokuContainer {
             }
         }
         return new String(Base64.getEncoder().encode(bytes));
-    }
-
-    public static SudokuField getDefaultField() {
-        String[] sx = {
-                "--179-2-6",
-                "73-21-98-",
-                "926-543--",
-                "-781-5-9-",
-                "31-489--7",
-                "54---7128",
-                "1-7-62-5-",
-                "--5971-3-",
-                "2635--7--"};
-        return new SudokuField(sx);
     }
 
     public void setCellValue(String cell, String value) {

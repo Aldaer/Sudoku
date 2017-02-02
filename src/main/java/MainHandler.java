@@ -1,3 +1,4 @@
+import model.FieldLoader;
 import model.SudokuField;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
@@ -49,8 +50,8 @@ class MainHandler extends AbstractHandler {
             case "/terminate":
                 killServer(response);
                 break;
-            default:    // Pass-through to file server
-                return;
+            default:        // Will be overwritten by File server when accessing existing files
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
         baseRequest.setHandled(true);
     }
@@ -62,9 +63,10 @@ class MainHandler extends AbstractHandler {
     }
 
     private void processNormalRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        final SudokuField playingField = getCookieByName(request.getCookies(), CK_FIELD)
+        final SudokuField playingField;
+        playingField = getCookieByName(request.getCookies(), CK_FIELD)
                 .map(Cookie::getValue)
-                .map(SudokuField::new).orElse(SudokuField.getDefaultField());
+                .map(SudokuField::new).orElse(FieldLoader.getDefaultField());
 
         final String cell = request.getParameter("cell");
         final String value = request.getParameter("value");

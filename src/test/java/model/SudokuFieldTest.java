@@ -3,8 +3,6 @@ package model;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -24,7 +22,7 @@ public class SudokuFieldTest {
 
     @Before
     public void setUp() throws Exception {
-        field = new SudokuField(SIMPLE_S);
+        field = FieldLoader.getFieldFromText(SIMPLE_S);
     }
 
     @Test
@@ -41,22 +39,5 @@ public class SudokuFieldTest {
         testCreation1();
     }
 
-    private String serializeBlock(List<SudokuCell> block) {
-        final StringBuilder str = new StringBuilder(9);
 
-        for (SudokuCell sudokuCell : block) {
-            int x = sudokuCell.getDefValue();
-            char c = x == 0 ? '-' : (char) (x + '0');
-            str.append(c);
-        }
-        return str.toString();
-    }
-
-    @Test
-    public void testSudokuBlocks() throws Exception {
-        final List<List<SudokuCell>> sudokuBlocks = field.getSudokuBlocks();
-        assertThat(serializeBlock(sudokuBlocks.get(0)), is("--179-2-6"));
-        assertThat(serializeBlock(sudokuBlocks.get(1)), is("-79-351-2"));
-        assertThat(serializeBlock(sudokuBlocks.get(2)), is("--173-926"));
-    }
 }
