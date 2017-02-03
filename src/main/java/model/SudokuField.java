@@ -131,8 +131,8 @@ public class SudokuField implements SudokuContainer {
         }
     }
 
-    public void setHintMode(boolean show) {
-        final IntUnaryOperator toggleHint = show ?
+    public void setHintMode(HintMode mode) {
+        final IntUnaryOperator toggleHint = mode ?
                 v -> v |= HINT_ON :
                 v -> v &= ~HINT_ON;
         for (SudokuCell cell : cells)

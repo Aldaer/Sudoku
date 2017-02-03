@@ -75,17 +75,22 @@
         </tbody>
     </table>
     <div class="bar">
+        <form id="hintForm" action="/hint">
+        Hints:
+            <input type="radio" name="hint" value="off">off
+            <input type="radio" name="hint" value="on">standard
+            <input type="radio" name="hint" value="smart">smart
+        </form>
         <form id="set" method="post">
-            <input name="hint" type="checkbox" onclick="submit();"/>Show hints
             <button formaction="/reset">Reset field</button>
             <button formaction="/terminate" style="color: red">Kill server</button>
-            <input name="cell" type="hidden"/>
-            <input name="value" type="hidden"/>
+            <input name="cell" type="hidden">
+            <input name="value" type="hidden">
         </form>
     </div>
     <div class="bar">
         <form id="load" enctype="multipart/form-data" method="post" action="/load">
-            Load Sudoku from file: <input name="file" type="file" onchange="form.submit()"/>
+            Load Sudoku from file: <input name="file" type="file" onchange="form.submit()">
         </form>
     </div>
     <div id="numpad" class="setnumber">

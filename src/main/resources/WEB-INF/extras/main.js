@@ -1,5 +1,6 @@
 const NUMPAD = $("#numpad");
 const SET_FORM = $("#set");
+const HINT_FORM = $("#hintForm");
 
 function cellClick(el) {
     $('td').removeClass("selected");
@@ -27,7 +28,9 @@ function submitKey(x) {
     SET_FORM.submit();
 }
 
-if ($('.hint').length) $('input[name="hint"]').prop("checked", true);
+$('input[name="hint"]').change(function() {
+    HINT_FORM.submit();
+    });
 
 $(document).keypress(function(e) {
     if (!NUMPAD.hasClass("popup")) return;

@@ -1,5 +1,6 @@
 import lombok.RequiredArgsConstructor;
 import model.FieldLoader;
+import model.HintMode;
 import model.InvalidFieldDataException;
 import model.SudokuField;
 import org.apache.commons.io.IOUtils;
@@ -21,9 +22,11 @@ import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 class StandardRequestProcessor implements RequestProcessor {
-    private final Matcher tMatcher = getMainTemplateMatcher();
     private static final String CK_FIELD = "field";
     private static final String CK_HINT = "hint";
+
+    //TODO: make this field static to make template load once at startup instead of each request
+    private final String template = getMainTemplate();
 
     final HttpServletRequest request;
     final HttpServletResponse response;
@@ -89,31 +92,34 @@ class StandardRequestProcessor implements RequestProcessor {
     }
 
     private void setHintMode(SudokuField playingField) {
-        boolean showHints = getCookieByName(CK_HINT)
+        final HintMode cookieHintMode = getCookieByName(CK_HINT)
                 .map(Cookie::getValue)
-                .map("on"::equals)
-                .orElse(false);
+                .map(HintMode::of)
+                .orElse(HintMode.OFF);
 
-        if (request.getMethod().equals("POST")) {
-            if ("on".equals(request.getParameter("hint"))) {
-                System.out.println("Hints on");
-                playingField.setHintMode(true);
-                playingField.generateHints();
-                response.addCookie(new Cookie(CK_HINT, "on"));
-            } else {
-                System.out.println("Hints off");
-                playingField.setHintMode(false);
-                response.addCookie(new Cookie(CK_HINT, "off"));
-            }
-        } else
-            playingField.setHintMode(showHints);
-    }
+        if (!request.getMethod().equals("POST")) {
+            playingField.setHintMode(cookieHintMode);
+            return;
+        }
+
+        final HintMode hintMode = HintMode.of(request.getParameter("hint"));
+        System.out.println("Hints=" + hintMode);
+        playingField.setHintMode(hintMode);
+        switch (hintMode) {
+            case ON:
+                break;
+            case SMART:
+                break;
+            case OFF:
+        }
+        // TODO: implement server-side hint processing
+}
 
     private void generateResponse(SudokuField playingField) throws IOException {
         StringBuilder responseTable = new StringBuilder();
         playingField.appendHtml(responseTable);
 
-        final String responseHtml = tMatcher.replaceAll(responseTable.toString());
+        final String responseHtml = templateMatcher().replaceAll(responseTable.toString());
 
         addFieldAsCookie(playingField);
 
@@ -146,12 +152,15 @@ class StandardRequestProcessor implements RequestProcessor {
         }
     }
 
-    private static Matcher getMainTemplateMatcher() {
+    private Matcher templateMatcher() {
+        return Pattern.compile("<tbody>.*</tbody>", Pattern.DOTALL).matcher(template);
+    }
+
+    private static String getMainTemplate() {
         try {
             final ClassLoader classLoader = ParsingHandler.class.getClassLoader();
             final InputStream resource = classLoader.getResourceAsStream("WEB-INF/main.html");
-            final String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
-            return Pattern.compile("<tbody>.*</tbody>", Pattern.DOTALL).matcher(template);
+            return IOUtils.toString(resource, StandardCharsets.UTF_8);
         } catch (IOException | NullPointerException e) {
             throw new RuntimeException("Cannot load template", e);
         }
