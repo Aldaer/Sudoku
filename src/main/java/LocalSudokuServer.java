@@ -40,8 +40,14 @@ public class LocalSudokuServer extends Thread {
         res.setResourceBase(webDir);
         res.setDirAllowed(true);
 
-        Handler main = new MainHandler(this);
+        Handler main = new ParsingHandler(server);
 
+        Handler multipartFixer = multipartSafeWrapper(main);
+
+        return new Handler[]{multipartFixer, res};
+    }
+
+    Handler multipartSafeWrapper(Handler main) {
         HandlerWrapper multipartFixer = new HandlerWrapper() {
             @Override
             public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -54,8 +60,7 @@ public class LocalSudokuServer extends Thread {
         };
 
         multipartFixer.setHandler(main);
-
-        return new Handler[]{multipartFixer, res};
+        return multipartFixer;
     }
 
     public static void main(String[] args) {

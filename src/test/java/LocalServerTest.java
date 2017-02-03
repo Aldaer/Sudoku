@@ -13,7 +13,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.ByteArrayInputStream;
@@ -33,21 +32,26 @@ public class LocalServerTest {
     private final static LocalSudokuServer serverWithLoopback = new LocalSudokuServer() {
         @Override
         Handler[] createHandlers() {
+            ParsingHandler parsingHandlerWithLoopback = new ParsingHandler(server,
+                    (req, res) -> new StandardRequestProcessor(req, res) {
+                        @Override
+                        public void loadField() throws IOException {
+                            final Part upload;
+                            try {
+                                upload = request.getPart("upload");
+                            } catch (ServletException e) {
+                                throw new RuntimeException(e);
+                            }
 
-            MainHandler mainHandlerWithLoopback = new MainHandler(this) {
-                @Override
-                void loadField(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-                    final Part upload = request.getPart("upload");
+                            final String fileName = upload.getSubmittedFileName();
+                            final String fileContent = IOUtils.toString(upload.getInputStream(), StandardCharsets.UTF_8);
+                            final PrintWriter writer = response.getWriter();
+                            writer.printf(fileName + "=" + fileContent);
+                            writer.close();
+                        }
+                    });
 
-                    final String fileName = upload.getSubmittedFileName();
-                    final String fileContent = IOUtils.toString(upload.getInputStream(), StandardCharsets.UTF_8);
-                    final PrintWriter writer = response.getWriter();
-                    writer.printf(fileName + "=" + fileContent);
-                    writer.close();
-                }
-            };
-
-            return new Handler[]{ mainHandlerWithLoopback };
+            return new Handler[]{ multipartSafeWrapper(parsingHandlerWithLoopback) };
         }
     };
 
