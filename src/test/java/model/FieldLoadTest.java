@@ -16,7 +16,7 @@ public class FieldLoadTest {
         final List<String> lines = Files.readAllLines(Paths.get("src/main/resources/data/default_field.txt"));
 
         SudokuField loaded = FieldLoader.getFieldFromText(lines);
-        SudokuField def = FieldLoader.getFieldFromText(defaultField);
+        SudokuField def = FieldLoader.getFieldFromLines(defaultField);
         assertTrue(def.valuesEqual(loaded));
     }
 }

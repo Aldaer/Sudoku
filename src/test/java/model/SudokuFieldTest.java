@@ -36,22 +36,22 @@ public class SudokuFieldTest {
 
     @Before
     public void setUp() throws Exception {
-        field = FieldLoader.getFieldFromText(DEFAULT_FIELD);
-        fieldSolved = FieldLoader.getFieldFromText(DEFAULT_FIELD_SOLVED);
+        field = FieldLoader.getFieldFromLines(DEFAULT_FIELD);
+        fieldSolved = FieldLoader.getFieldFromLines(DEFAULT_FIELD_SOLVED);
     }
 
     @Test
-    public void creation1() throws Exception {
+    public void fieldCreation() throws Exception {
         assertThat(field.cells[29].getDefValue(), is(8));
         assertThat(field.cells[66].getDefValue(), is(9));
     }
 
     @Test
-    public void creation2() throws Exception {
+    public void fieldSerialization() throws Exception {
         final String szd = field.serialize();
         System.out.println(szd);
-        field = new SudokuField(szd);
-        creation1();
+        field = FieldLoader.deserializeField(szd);
+        fieldCreation();
     }
 
     @Test
@@ -65,10 +65,7 @@ public class SudokuFieldTest {
         assertTrue(fieldSolved.isValid());
         final String[] solvedBad = Arrays.copyOf(DEFAULT_FIELD_SOLVED, 9);
         solvedBad[8] = "263584718";
-        SudokuField fieldSolvedBad = FieldLoader.getFieldFromText(solvedBad);
+        SudokuField fieldSolvedBad = FieldLoader.getFieldFromLines(solvedBad);
         assertFalse(fieldSolvedBad.isValid());
     }
-
-
-
 }

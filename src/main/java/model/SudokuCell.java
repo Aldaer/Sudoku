@@ -69,7 +69,7 @@ class SudokuCell implements SudokuElement {
         }
         if (classList.size() > 0) {
             StringJoiner sj = new StringJoiner(" ", "class=\"", "\"");
-            for (String cls: classList)
+            for (String cls : classList)
                 sj.add(cls);
             builder.append(sj.toString());
         }
@@ -78,7 +78,7 @@ class SudokuCell implements SudokuElement {
     }
 
     private boolean contradictsHint() {       // Not checked for hardcoded cells
-        if (! (isDefinite() && isHinted())) return false;
+        if (!(isDefinite() && isHinted())) return false;
         int bitVal = 1 << getDefValue() >> 1;
         return (bitVal & value) == 0;
     }
@@ -89,5 +89,9 @@ class SudokuCell implements SudokuElement {
 
     void setDefiniteValue(int newVal) {
         value = newVal != 0 ? (value & CLEAR_VAL) | DEFINITE | (newVal << 12) : 0;
+    }
+
+    void reset() {
+        if (!isHardcoded()) value = 0;
     }
 }

@@ -4,7 +4,11 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.IntUnaryOperator;
 
 import static model.SudokuCell.hardcodedValue;
 
@@ -36,24 +40,60 @@ public class FieldLoader {
         }
     }
 
-    static SudokuField getFieldFromText(String[] normalizedRepresentation) throws InvalidFieldDataException {
+    static SudokuField getFieldFromLines(String[] normalizedRepresentation) throws InvalidFieldDataException {
         return new SudokuField(textToArray(normalizedRepresentation));
     }
 
     static SudokuField getFieldFromText(List<String> lines) throws InvalidFieldDataException {
-        return getFieldFromText(normalizeLines(lines));
+        return getFieldFromLines(normalizeLines(lines));
     }
 
     private static String[] normalizeLines(List<String> lines) {
         return lines.stream()
-                .map(s -> s.replaceAll("\\s", ""))
+                .flatMap(s -> Arrays.stream(s.split("[\n\r]")))
+                .map(s -> s.replaceAll("\\s+", ""))
                 .filter(s -> !s.isEmpty())
                 .toArray(String[]::new);
     }
-}
 
-class InvalidFieldDataException extends Exception {
-    InvalidFieldDataException(Throwable cause) {
-        super(cause);
+    public static SudokuField deserializeField(String base64encoded) {
+        return new SudokuField(decode(base64encoded));
+    }
+
+    public static SudokuField getEmptyField() {
+        return new SudokuField(new int[81]);
+    }
+
+    public static SudokuField getFieldFromString(String contents) throws InvalidFieldDataException {
+        return getFieldFromText(Collections.singletonList(contents));
+    }
+
+    static String encode(IntUnaryOperator valueFromIndex) {
+        final byte[] bytes = new byte[324];
+        for (int i = 0; i < 81; i++) {
+            int x = valueFromIndex.applyAsInt(i);
+            for (int k = 3; k >= 0; k--) {
+                bytes[i * 4 + k] = (byte) (x & 255);
+                x >>= 8;
+            }
+        }
+        return new String(Base64.getEncoder().encode(bytes));
+    }
+
+    private static int[] decode(String encoded) {
+        final byte[] bytes = Base64.getDecoder().decode(encoded);
+        assert bytes.length == 324;
+
+        int[] values = new int[81];
+        for (int i = 0; i < 81; i++) {
+            int x = 0;
+            for (int k = 0; k < 4; k++) {
+                x <<= 8;
+                x += (bytes[i * 4 + k] + 256) & 255;
+            }
+            values[i] = x;
+        }
+        return values;
     }
 }
+

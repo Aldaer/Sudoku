@@ -1,11 +1,9 @@
 package model;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
@@ -13,7 +11,6 @@ import java.util.stream.IntStream;
 import static model.SudokuCell.HINT_MASK;
 import static model.SudokuCell.HINT_ON;
 
-@RequiredArgsConstructor
 public class SudokuField implements SudokuContainer {
     final SudokuCell[] cells = new SudokuCell[81];
 
@@ -67,27 +64,6 @@ public class SudokuField implements SudokuContainer {
         return affectingList;
     }
 
-
-    public SudokuField(String serialized) {
-        this(decode(serialized));
-    }
-
-    private static int[] decode(String serialized) {
-        final byte[] bytes = Base64.getDecoder().decode(serialized);
-        assert bytes.length == 324;
-
-        int[] values = new int[81];
-        for (int i = 0; i < 81; i++) {
-            int x = 0;
-            for (int k = 0; k < 4; k++) {
-                x <<= 8;
-                x += (bytes[i * 4 + k] + 256) & 255;
-            }
-            values[i] = x;
-        }
-        return values;
-    }
-
     private static final int[] HTML_WALK_INDEX = generateHtmlTableWalkIndex();
 
     // Converts row-column indexing of the text representation into box-by-box thorough indexing of the html
@@ -130,15 +106,7 @@ public class SudokuField implements SudokuContainer {
     }
 
     public String serialize() {
-        final byte[] bytes = new byte[324];
-        for (int i = 0; i < 81; i++) {
-            int x = cells[i].value;
-            for (int k = 3; k >= 0; k--) {
-                bytes[i * 4 + k] = (byte) (x & 255);
-                x >>= 8;
-            }
-        }
-        return new String(Base64.getEncoder().encode(bytes));
+        return FieldLoader.encode(i -> cells[i].value);
     }
 
     public void setCellValue(String cell, String value) {
@@ -173,5 +141,10 @@ public class SudokuField implements SudokuContainer {
 
     boolean valuesEqual(SudokuField f) {
         return IntStream.range(0, 81).allMatch(i -> cells[i].getDefValue() == f.cells[i].getDefValue());
+    }
+
+    public void reset() {
+        for (SudokuCell cell : cells)
+            cell.reset();
     }
 }

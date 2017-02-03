@@ -1,5 +1,6 @@
 import lombok.RequiredArgsConstructor;
 import model.FieldLoader;
+import model.InvalidFieldDataException;
 import model.SudokuField;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
@@ -73,12 +74,21 @@ class MainHandler extends AbstractHandler {
         baseRequest.setHandled(true);
     }
 
-    void loadField(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        // TODO: really implement
-        request.getParts().stream()
-                .map(Part::getName)
-                .forEach(System.out::println);
-
+    void loadField(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        SudokuField newField;
+        try {
+            final Part filePart = request.getPart("file");
+            try (InputStream is = filePart.getInputStream()) {
+                byte[] buf = new byte[1024];
+                final int len = is.read(buf);
+                String contents = new String(buf, 0, len);
+                newField = FieldLoader.getFieldFromString(contents);
+            }
+        } catch (ServletException | InvalidFieldDataException e) {
+            newField = FieldLoader.getEmptyField();
+        }
+        addFieldAsCookie(newField, response);
+        deleteCookie(request, response, CK_HINT);
         response.sendRedirect("/");
     }
 
@@ -89,16 +99,15 @@ class MainHandler extends AbstractHandler {
     }
 
     private void resetField(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        deleteCookie(request, response, CK_FIELD);
+        final SudokuField playingField = getFieldFromCookies(request);
+        playingField.reset();
+        addFieldAsCookie(playingField, response);
         deleteCookie(request, response, CK_HINT);
         response.sendRedirect("/");
     }
 
     private void processNormalRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        final SudokuField playingField;
-        playingField = getCookieByName(request.getCookies(), CK_FIELD)
-                .map(Cookie::getValue)
-                .map(SudokuField::new).orElse(FieldLoader.getDefaultField());
+        final SudokuField playingField = getFieldFromCookies(request);
 
         final String cell = request.getParameter("cell");
         final String value = request.getParameter("value");
@@ -111,6 +120,13 @@ class MainHandler extends AbstractHandler {
         setHintMode(request, response, playingField);
 
         generateResponse(playingField, request, response);
+    }
+
+    private SudokuField getFieldFromCookies(HttpServletRequest request) {
+        return getCookieByName(request.getCookies(), CK_FIELD)
+                .map(Cookie::getValue)
+                .map(FieldLoader::deserializeField)
+                .orElse(FieldLoader.getDefaultField());
     }
 
     private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
@@ -148,12 +164,16 @@ class MainHandler extends AbstractHandler {
 
         final String responseHtml = tMatcher.replaceAll(responseTable.toString());
 
-        response.addCookie(new Cookie(CK_FIELD, playingField.serialize()));
+        addFieldAsCookie(playingField, response);
 
         try (PrintWriter writer = response.getWriter()) {
             writer.print(responseHtml);
             response.setStatus(HttpServletResponse.SC_OK);
         }
+    }
+
+    private void addFieldAsCookie(SudokuField playingField, HttpServletResponse response) {
+        response.addCookie(new Cookie(CK_FIELD, playingField.serialize()));
     }
 
     private static Optional<Cookie> getCookieByName(Cookie[] cookies, String name) {
