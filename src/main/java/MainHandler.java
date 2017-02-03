@@ -6,7 +6,6 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
-import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -23,9 +22,6 @@ import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 class MainHandler extends AbstractHandler {
-    private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
-    private final MultipartConfigElement MPCE = new MultipartConfigElement(TMP_DIR);
-
     private final LocalSudokuServer serverInstance;
 
     private final Matcher tMatcher = getMainTemplateMatcher();
@@ -45,11 +41,6 @@ class MainHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        Optional.ofNullable(request
-                .getContentType())
-                .filter(t -> t.startsWith("multipart"))
-                .ifPresent(t -> baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MPCE));
-
         System.out.printf("Processing: [%s]%n", target);
         switch (target) {
             case "/":
