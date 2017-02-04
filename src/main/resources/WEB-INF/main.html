@@ -77,9 +77,9 @@
     <div class="bar">
         <form id="hintForm" action="/hint">
         Hints:
-            <input type="radio" name="hint" value="off">off
-            <input type="radio" name="hint" value="on">standard
-            <input type="radio" name="hint" value="smart">smart
+            <input type="radio" name="hint" value="OFF">off
+            <input type="radio" name="hint" value="ON">standard
+            <input type="radio" name="hint" value="SMART">smart
         </form>
         <form id="set" method="post">
             <button formaction="/reset">Reset field</button>
@@ -90,7 +90,7 @@
     </div>
     <div class="bar">
         <form id="load" enctype="multipart/form-data" method="post" action="/load">
-            Load Sudoku from file: <input name="file" type="file" onchange="form.submit()">
+            Load Sudoku from file: <input name="file" type="file" onchange="this.form.submit();">
         </form>
     </div>
     <div id="numpad" class="setnumber">

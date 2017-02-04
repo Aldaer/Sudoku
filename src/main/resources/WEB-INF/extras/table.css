@@ -5,11 +5,11 @@
 body {
     background: steelblue;
     font-family: "Open Sans", sans-serif;
+    text-align: center;
 }
 
 h1 {
     text-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    text-align: center;
 }
 
 table {
@@ -48,6 +48,10 @@ th {
     padding-bottom: 15px;
 }
 
+.bar {
+    text-align: left;
+}
+
 tr {
     border-bottom: 1px solid #cccccc;
 }
@@ -60,7 +64,6 @@ td {
     border-right: 1px solid #cccccc;
     padding: 1px;
     transition: all 0.2s;
-    text-align: center;
     color: #1a9609;
 }
 
@@ -88,9 +91,9 @@ td.selected {
 }
 
 .main {
-    max-width: 450px;
     padding: 2px;
     margin: auto;
+    display: inline-block;
 }
 
 .hint {

@@ -1,7 +1,7 @@
 package model;
 
 public enum HintMode {
-    OFF, ON, SMART;
+    OFF, ON, SMART, MANUAL;
 
     public static HintMode of(String mode) {
         try {

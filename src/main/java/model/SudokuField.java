@@ -22,12 +22,12 @@ public class SudokuField implements SudokuContainer {
         return "tbody";
     }
 
-    public boolean isFilled() {
+    boolean isFilled() {
         return Arrays.stream(cells)
                 .allMatch(SudokuCell::isDefinite);
     }
 
-    public boolean isValid() {
+    boolean isValid() {
         return Arrays.stream(cells)
                 .filter(SudokuCell::isDefinite)
                 .allMatch(cell -> Arrays.stream(cellsAffectingCellAt(cell.index))
@@ -121,22 +121,37 @@ public class SudokuField implements SudokuContainer {
         }
     }
 
-    public void generateHints() {
-        for (SudokuCell cell : cells) {
-            cell.value |= HINT_MASK;
-            int used = 0;
-            for (int i : cellsAffectingCellAt(cell.index))
-                used |= 1 << cells[i].getDefValue() >> 1;
-            cell.value &= ~used;
+    public void generateHints(HintMode hintMode) {
+        IntUnaryOperator hintByIndex;
+        switch (hintMode) {
+            case ON:
+                hintByIndex = this::calculateHintedValue;
+                break;
+            case SMART:
+                hintByIndex = this::calculateSmartValue;
+                break;
+            case OFF:
+                hintByIndex = i -> cells[i].value & ~HINT_ON;
+                break;
+            case MANUAL:
+            default:
+                return;
         }
+        for (int i = 0; i < 81; i++)
+            cells[i].value = hintByIndex.applyAsInt(i);
     }
 
-    public void setHintMode(HintMode mode) {
-        final IntUnaryOperator toggleHint = mode ?
-                v -> v |= HINT_ON :
-                v -> v &= ~HINT_ON;
-        for (SudokuCell cell : cells)
-            cell.value = toggleHint.applyAsInt(cell.value);
+    private int calculateHintedValue(int index) {
+        int val = cells[index].value | HINT_MASK;
+        int used = 0;
+        for (int j : cellsAffectingCellAt(index))
+            used |= 1 << cells[j].getDefValue() >> 1;
+        return val & ~used;
+    }
+
+    private int calculateSmartValue(int index) {
+        // TODO: implement;
+        return cells[index].value;
     }
 
     boolean valuesEqual(SudokuField f) {
@@ -144,7 +159,10 @@ public class SudokuField implements SudokuContainer {
     }
 
     public void reset() {
-        for (SudokuCell cell : cells)
-            cell.reset();
+        Arrays.stream(cells).forEach(SudokuCell::reset);
+    }
+
+    public void activateHints() {
+        Arrays.stream(cells).forEach(SudokuCell::activateHint);
     }
 }

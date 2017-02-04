@@ -30,6 +30,10 @@ class ParsingHandler extends AbstractHandler {
                 proc.processNormalRequest();
                 break;
 
+            case "/hint":
+                proc.processHintRequest();
+                break;
+
             case "/reset":
                 proc.resetField();
                 break;

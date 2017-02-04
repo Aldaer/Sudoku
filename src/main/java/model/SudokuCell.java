@@ -88,10 +88,15 @@ class SudokuCell implements SudokuElement {
     }
 
     void setDefiniteValue(int newVal) {
-        value = newVal != 0 ? (value & CLEAR_VAL) | DEFINITE | (newVal << 12) : 0;
+        value &= CLEAR_VAL;
+        value = newVal != 0 ? value | DEFINITE | (newVal << 12) : value & ~DEFINITE;
     }
 
     void reset() {
         if (!isHardcoded()) value = 0;
+    }
+
+    void activateHint() {
+        value |= HINT_ON;
     }
 }

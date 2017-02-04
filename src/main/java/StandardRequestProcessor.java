@@ -3,8 +3,8 @@ import model.FieldLoader;
 import model.HintMode;
 import model.InvalidFieldDataException;
 import model.SudokuField;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Server;
+import template.TemplateProcessor;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -14,10 +14,7 @@ import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -25,15 +22,13 @@ class StandardRequestProcessor implements RequestProcessor {
     private static final String CK_FIELD = "field";
     private static final String CK_HINT = "hint";
 
-    //TODO: make this field static to make template load once at startup instead of each request
-    private final String template = getMainTemplate();
-
     final HttpServletRequest request;
     final HttpServletResponse response;
 
     @Override
     public void processNormalRequest() throws IOException {
-        final SudokuField playingField = getFieldFromCookies();
+        SudokuField playingField = getFieldFromCookies();
+        final HintMode cookieHintMode = getHintModeFromCookies();
 
         final String cell = request.getParameter("cell");
         final String value = request.getParameter("value");
@@ -43,9 +38,31 @@ class StandardRequestProcessor implements RequestProcessor {
         } catch (NumberFormatException ignored) {
         }
 
-        setHintMode(playingField);
+        generateResponse(playingField, cookieHintMode);
+    }
 
-        generateResponse(playingField);
+    @Override
+    public void processHintRequest() throws IOException {
+        final HintMode cookieHintMode = getHintModeFromCookies();
+
+        HintMode requestHintMode = Optional.ofNullable(request.getParameter("hint")).map(HintMode::of).orElse(cookieHintMode);
+
+        System.out.printf("Hints: %s -> %s%n", cookieHintMode, requestHintMode);
+        if (cookieHintMode == HintMode.OFF && requestHintMode != HintMode.OFF) {
+            SudokuField playingField = getFieldFromCookies();
+            playingField.activateHints();
+            addFieldAsCookie(playingField);
+        }
+
+        response.addCookie(new Cookie(CK_HINT, requestHintMode.name()));
+        response.sendRedirect("/");
+    }
+
+    private HintMode getHintModeFromCookies() {
+        return getCookieByName(CK_HINT)
+                .map(Cookie::getValue)
+                .map(HintMode::of)
+                .orElse(HintMode.OFF);
     }
 
     private SudokuField getFieldFromCookies() {
@@ -91,37 +108,12 @@ class StandardRequestProcessor implements RequestProcessor {
         );
     }
 
-    private void setHintMode(SudokuField playingField) {
-        final HintMode cookieHintMode = getCookieByName(CK_HINT)
-                .map(Cookie::getValue)
-                .map(HintMode::of)
-                .orElse(HintMode.OFF);
-
-        if (!request.getMethod().equals("POST")) {
-            playingField.setHintMode(cookieHintMode);
-            return;
-        }
-
-        final HintMode hintMode = HintMode.of(request.getParameter("hint"));
-        System.out.println("Hints=" + hintMode);
-        playingField.setHintMode(hintMode);
-        switch (hintMode) {
-            case ON:
-                break;
-            case SMART:
-                break;
-            case OFF:
-        }
-        // TODO: implement server-side hint processing
-}
-
-    private void generateResponse(SudokuField playingField) throws IOException {
-        StringBuilder responseTable = new StringBuilder();
-        playingField.appendHtml(responseTable);
-
-        final String responseHtml = templateMatcher().replaceAll(responseTable.toString());
-
+    private void generateResponse(SudokuField playingField, HintMode hintMode) throws IOException {
+        playingField.generateHints(hintMode);
         addFieldAsCookie(playingField);
+
+        TemplateProcessor tp = TemplateProcessor.with(playingField, hintMode);
+        String responseHtml = tp.process();
 
         try (PrintWriter writer = response.getWriter()) {
             writer.print(responseHtml);
@@ -149,20 +141,6 @@ class StandardRequestProcessor implements RequestProcessor {
             server.stop();
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
-
-    private Matcher templateMatcher() {
-        return Pattern.compile("<tbody>.*</tbody>", Pattern.DOTALL).matcher(template);
-    }
-
-    private static String getMainTemplate() {
-        try {
-            final ClassLoader classLoader = ParsingHandler.class.getClassLoader();
-            final InputStream resource = classLoader.getResourceAsStream("WEB-INF/main.html");
-            return IOUtils.toString(resource, StandardCharsets.UTF_8);
-        } catch (IOException | NullPointerException e) {
-            throw new RuntimeException("Cannot load template", e);
         }
     }
 }
