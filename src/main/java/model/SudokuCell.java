@@ -11,7 +11,7 @@ class SudokuCell implements SudokuElement {
     //                              Reserved-\   /-Definite value or 0
     //              Definite & hardcoded-\   |  |  /-"Hint On" bit and possible values (bitmask)
     private static final int DEFINITE = 0x1_000_0_000;
-    private static final int HARDCODED = 0x3_000_0_000;
+    private static final int HARDCODED = 0x3_000_0_000;     // Hardcoded is always definite
     private static final int CLEAR_VAL = 0xFFFF0FFF;
 
     static final int HINT_MASK = 0x01FF;
@@ -77,10 +77,9 @@ class SudokuCell implements SudokuElement {
         builder.append(">");
     }
 
-    private boolean contradictsHint() {       // Not checked for hardcoded cells
+    boolean contradictsHint() {       // Not checked for hardcoded cells
         if (!(isDefinite() && isHinted())) return false;
-        int bitVal = 1 << getDefValue() >> 1;
-        return (bitVal & value) == 0;
+        return (hintBit(getDefValue()) & value) == 0;
     }
 
     static int hardcodedValue(int x) {
@@ -98,5 +97,9 @@ class SudokuCell implements SudokuElement {
 
     void activateHint() {
         value |= HINT_ON;
+    }
+
+    static int hintBit(int value) {
+        return 1 << value >> 1;
     }
 }

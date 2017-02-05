@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 
-import static model.SudokuCell.HINT_MASK;
-import static model.SudokuCell.HINT_ON;
+import static model.SudokuCell.*;
+import static model.SudokuConstants.SUDOKU_BLOCK_INDEX;
 
 public class SudokuField implements SudokuContainer {
     final SudokuCell[] cells = new SudokuCell[81];
@@ -109,22 +109,68 @@ public class SudokuField implements SudokuContainer {
         int used = 0;
         for (int[] block : SudokuConstants.AFFECTING_CELL_TABLE[index])
             for (int j : block)
-                used |= 1 << cells[j].getDefValue() >> 1;
+                used |= hintBit(cells[j].getDefValue());
         return val & ~used;
     }
 
+
     private void generateSmartHints() {
         generateHints(HintMode.ON);
+        for (SudokuCell cell : cells) {
+            if (cell.contradictsHint()) return;
+            if (! cell.isDefinite()) continue;
+            // For definite cells, set only one bit for possible contents.
+            cell.value &= ~HINT_MASK;
+            cell.value |= hintBit(cell.getDefValue());
+        }
+
+        SudokuCell[] currentBlock = new SudokuCell[9];
+        int[] currentBlockValues = new int[9];
+        int[] buf = new int[9];
         for (boolean updated = true; updated; ) {
             updated = false;
-            for (SudokuCell cell : cells) {
-                int i = cell.index;
-                for (int bStart = 0; bStart < 24; bStart += 8) { // 3 independent blocks affecting ith cell
+            for (int[] blockIndex : SUDOKU_BLOCK_INDEX) {
+                for (int j = 0; j < 9; j++) {
+                    currentBlock[j] = cells[blockIndex[j]];
+                    currentBlockValues[j] = currentBlock[j].value;
                 }
+                if (!isBlockValid(currentBlockValues)) return;
+
+                for (int j = 0; j < 9; j++) {
+                    if (currentBlock[j].isDefinite()) continue;
+                    int currentCellValue = currentBlock[j].value;
+                    for (int n = 0; n < 9; n++) {
+                        int nthBit = 1 << n;
+                        if ((currentCellValue & nthBit) == 0) continue;
+                        System.arraycopy(currentBlockValues, 0, buf, 0, 9);
+                        int clearNthBit = ~nthBit;
+                        for (int k = 0; k < 9; k++)
+                            buf[k] &= clearNthBit;
+                        buf[j] |= nthBit;
+                        if (!isBlockValid(buf)) {       // Variant that makes block invalid cannot be used, delete from hint
+                            currentBlock[j].value &= ~nthBit;
+                            updated = true;
+                        }
+
+                    }
+
+                }
+
             }
 
         }
 
+    }
+
+    private static boolean isBlockValid(int[] block) {
+        assert block.length == 9;
+        int possibilities = 0;
+        boolean empties = false;
+        for (int i = 0; i < 9; i++) {
+            possibilities |= block[i];
+            empties |= (block[i] & HINT_MASK) == 0;
+        }
+        return !empties && ((possibilities & HINT_MASK) == HINT_MASK);
     }
 
     boolean valuesEqual(SudokuField f) {
@@ -138,4 +184,5 @@ public class SudokuField implements SudokuContainer {
     public void activateHints() {
         Arrays.stream(cells).forEach(SudokuCell::activateHint);
     }
+
 }
