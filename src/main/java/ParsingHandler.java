@@ -22,7 +22,7 @@ class ParsingHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        System.out.printf("Processing: [%s]%n", target);
+        System.out.printf("Processing %s: [%s]%n", request.getMethod(), target);
         RequestProcessor proc = requestProcessorFactory.apply(request, response);
 
         switch (target) {

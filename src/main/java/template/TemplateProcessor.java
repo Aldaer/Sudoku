@@ -49,7 +49,6 @@ public class TemplateProcessor {
         String page = templateMatcher().replaceFirst(responseTable.toString());
 
         return checkRadioButton(page, "hint", hintMode.name());
-
     }
 
     private String checkRadioButton(String html, String group, String value) {

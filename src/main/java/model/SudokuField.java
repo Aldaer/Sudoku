@@ -30,49 +30,12 @@ public class SudokuField implements SudokuContainer {
     boolean isValid() {
         return Arrays.stream(cells)
                 .filter(SudokuCell::isDefinite)
-                .allMatch(cell -> Arrays.stream(cellsAffectingCellAt(cell.index))
+                .allMatch(cell -> Arrays.stream(SudokuConstants.AFFECTING_CELL_TABLE[cell.index])
+                        .flatMapToInt(Arrays::stream)
                         .mapToObj(i -> cells[i])
                         .mapToInt(SudokuCell::getDefValue)
                         .noneMatch(value -> cell.getDefValue() == value)
                 );
-    }
-
-    private final int[][] affectingCellCache = new int[81][];
-
-    private int[] cellsAffectingCellAt(int index) {
-        int[] affectingList;
-        synchronized (affectingCellCache) {
-            affectingList = affectingCellCache[index];
-            if (affectingList != null) return affectingList;
-            affectingList = new int[24];
-            int r = 0;
-            int c = 8;
-            int b = 16;
-            int rowStart = (index / 9) * 9;
-            int colStart = index % 9;
-            int boxStart = (colStart / 3) * 3 + (rowStart / 27) * 27;
-            for (int i = 0; i < 9; i++) {
-                int rowI = rowStart + i;
-                int colI = colStart + i * 9;
-                int boxI = boxStart + i % 3 + (i / 3) * 9;
-                if (rowI != index) affectingList[r++] = rowI;
-                if (colI != index) affectingList[c++] = colI;
-                if (boxI != index) affectingList[b++] = boxI;
-            }
-            affectingCellCache[index] = affectingList;
-        }
-        return affectingList;
-    }
-
-    private static final int[] HTML_WALK_INDEX = generateHtmlTableWalkIndex();
-
-    // Converts row-column indexing of the text representation into box-by-box thorough indexing of the html
-    private static int[] generateHtmlTableWalkIndex() {
-        int[] index = new int[81];
-        for (int row = 0; row < 9; row++)
-            for (int col = 0; col < 9; col++)
-                index[row * 9 + col] = (row / 3) * 27 + (row % 3) * 3 + (col / 3) * 9 + col % 3;
-        return index;
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -99,7 +62,7 @@ public class SudokuField implements SudokuContainer {
                 smallRow = new SudokuContainerImpl("tr");
                 box.getContents().add(smallRow);
             }
-            int ix = HTML_WALK_INDEX[i];
+            int ix = SudokuConstants.HTML_WALK_INDEX[i];
             cells[ix] = new SudokuCell(ix, values[ix]);
             smallRow.getContents().add(cells[ix]);
         }
@@ -128,8 +91,8 @@ public class SudokuField implements SudokuContainer {
                 hintByIndex = this::calculateHintedValue;
                 break;
             case SMART:
-                hintByIndex = this::calculateSmartValue;
-                break;
+                generateSmartHints();
+                return;
             case OFF:
                 hintByIndex = i -> cells[i].value & ~HINT_ON;
                 break;
@@ -144,14 +107,24 @@ public class SudokuField implements SudokuContainer {
     private int calculateHintedValue(int index) {
         int val = cells[index].value | HINT_MASK;
         int used = 0;
-        for (int j : cellsAffectingCellAt(index))
-            used |= 1 << cells[j].getDefValue() >> 1;
+        for (int[] block : SudokuConstants.AFFECTING_CELL_TABLE[index])
+            for (int j : block)
+                used |= 1 << cells[j].getDefValue() >> 1;
         return val & ~used;
     }
 
-    private int calculateSmartValue(int index) {
-        // TODO: implement;
-        return cells[index].value;
+    private void generateSmartHints() {
+        generateHints(HintMode.ON);
+        for (boolean updated = true; updated; ) {
+            updated = false;
+            for (SudokuCell cell : cells) {
+                int i = cell.index;
+                for (int bStart = 0; bStart < 24; bStart += 8) { // 3 independent blocks affecting ith cell
+                }
+            }
+
+        }
+
     }
 
     boolean valuesEqual(SudokuField f) {
