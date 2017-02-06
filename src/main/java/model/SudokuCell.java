@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.StringJoiner;
 
 @AllArgsConstructor
-class SudokuCell implements SudokuElement {
+public class SudokuCell implements SudokuElement {
     //                              Reserved-\   /-Definite value or 0
     //              Definite & hardcoded-\   |  |  /-"Hint On" bit and possible values (bitmask)
     private static final int DEFINITE = 0x1_000_0_000;
     private static final int HARDCODED = 0x3_000_0_000;     // Hardcoded is always definite
     private static final int CLEAR_VAL = 0xFFFF0FFF;
 
-    static final int HINT_MASK = 0x01FF;
+    public static final int HINT_MASK = 0x01FF;
     static final int HINT_ON = 0x0200;
 
     final int index;

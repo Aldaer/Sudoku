@@ -125,6 +125,10 @@ public class SudokuField implements SudokuContainer {
         }
 
         SudokuCell[] currentBlock = new SudokuCell[9];
+        List<SudokuCell> indefiniteInCurrentBlock = new ArrayList<>(9);
+        List<SudokuCell> selectedSubGroup = new ArrayList<>(8);
+        List<SudokuCell> unselectedSubGroup = new ArrayList<>(8);
+
         int[] currentBlockValues = new int[9];
         int[] buf = new int[9];
         for (boolean updated = true; updated; ) {
