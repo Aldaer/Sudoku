@@ -16,11 +16,19 @@ class Combinatorics {
      * COMBINATIONS[n][k][...] - all possible combinations of k integers from the range [1, n]
      * COMBINATIONS[n][k][i][...] - i-th possible combination, 0 <= i < C(n, k)
      * COMBINATIONS[n][k][i][j] - j-th member of the combination, 0 <= j < k
-     *
+     * <p>
      * COMBINATIONS[0], COMBINATIONS[i][0] == null
      */
-    static final int[][][][] COMBINATIONS = generateCombinationsMatrix(9);
+    static final int[][][][] COMBINATIONS = generateCombinationsMatrix(MAX_N);
 
+    /**
+     * This is the inverse of COMBINATIONS matrix.
+     * Union of COMBINATIONS[n][k][i][] and ANTI_COMBINATIONS[n][k][i][] always produces [0..n]
+     * Thus, ANTI_COMBINATIONS[n][n][0] are empty arrays.
+     * <p>
+     * ANTI_COMBINATIONS[0], ANTI_COMBINATIONS[i][0] == null
+     */
+    static final int[][][][] ANTI_COMBINATIONS = reverseCombinationsMatrix(COMBINATIONS);
 
     private static int[] generateFactorials(int maxN) {
         int[] result = new int[maxN + 1];
@@ -77,4 +85,30 @@ class Combinatorics {
         matrix[n][k] = Cnk;
     }
 
+
+    private static int[][][][] reverseCombinationsMatrix(int[][][][] combinations) {
+        int maxN = combinations.length - 1;
+        int[][][][] matrix = new int[maxN + 1][][][];
+        for (int n = 1; n <= maxN; n++) {
+            matrix[n] = new int[n + 1][][];
+            for (int k = 1; k <= n; k++) {
+                int[][] antiCnk = new int[combinations[n][k].length][];
+                for (int i = 0; i < antiCnk.length; i++) {
+                    antiCnk[i] = new int[n - k];
+                    if (n == k) continue;
+
+                    int usedIndex = 0;
+                    int unusedIndex = 0;
+                    for (int j = 0; j < n; j++) {
+                        if (usedIndex < k && combinations[n][k][i][usedIndex] == j)
+                            usedIndex++;
+                        else
+                            antiCnk[i][unusedIndex++] = j;
+                    }
+                }
+                matrix[n][k] = antiCnk;
+            }
+        }
+        return matrix;
+    }
 }

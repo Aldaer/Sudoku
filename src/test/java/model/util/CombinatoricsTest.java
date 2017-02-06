@@ -4,12 +4,12 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static model.util.Combinatorics.*;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class CombinatoricsTest {
     @Test
@@ -20,13 +20,31 @@ public class CombinatoricsTest {
 
     @Test
     public void combinations() throws Exception {
-        Set<String> expected = new HashSet<>(Arrays.asList("012", "013", "014", "023", "024", "034", "123", "124", "134", "234"));
+        List<String> expected = Arrays.asList("012", "013", "014", "023", "024", "034", "123", "124", "134", "234");
 
-        Set<String> calculated = Arrays.stream(COMBINATIONS[5][3])
+        List<String> calculated = Arrays.stream(COMBINATIONS[5][3])
                 .map(Arrays::stream)
-                .collect(Collectors.mapping(is -> is.mapToObj(Integer::toString).collect(Collectors.joining()), Collectors.toSet()));
+                .collect(Collectors.mapping(is -> is.mapToObj(Integer::toString).collect(Collectors.joining()), Collectors.toList()));
 
         assertThat(calculated, is(expected));
+    }
+
+    @Test
+    public void antiCombinations() throws Exception {
+        List<String> expected = Arrays.asList("34", "24", "23", "14", "13", "12", "04", "03", "02", "01");
+
+        List<String> calculated = Arrays.stream(ANTI_COMBINATIONS[5][3])
+                .map(Arrays::stream)
+                .collect(Collectors.mapping(is -> is.mapToObj(Integer::toString).collect(Collectors.joining()), Collectors.toList()));
+
+        assertThat(calculated, is(expected));
+
+        List<String> complement = Arrays.stream(COMBINATIONS[5][2])
+                .map(Arrays::stream)
+                .collect(Collectors.mapping(is -> is.mapToObj(Integer::toString).collect(Collectors.joining()), Collectors.toList()));
+
+        assertNotEquals(calculated, complement);
+        assertEquals(new HashSet<>(calculated), new HashSet<>(complement));     // same elements but in other order
     }
 
     @Test
