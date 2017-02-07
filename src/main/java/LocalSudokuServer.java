@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class LocalSudokuServer extends Thread {
-    static final int PORT = 80; //8888;
+    static final int PORT = 8888;
 
     final Server server = new Server(PORT);
 

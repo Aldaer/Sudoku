@@ -87,6 +87,9 @@ public class SudokuField implements SudokuContainer {
 
     public void generateHints(HintMode hintMode) {
         IntUnaryOperator hintByIndex;
+
+        unmarkAllCellsAsBad();
+
         switch (hintMode) {
             case ON:
                 hintByIndex = this::calculateHintedValue;
@@ -117,17 +120,13 @@ public class SudokuField implements SudokuContainer {
 
     private void generateSmartHints() {
         generateHints(HintMode.ON);
-        for (SudokuCell cell : cells)
-            if (cell.contradictsHint())
-                return;     // Bad cells detected, cannot proceed // TODO: verify if this is required
 
         final List<SudokuCell> indefiniteInCurrentBlock = new ArrayList<>(9);
         final List<Integer> previousValues = new ArrayList<>(9);
-        final List<SudokuCell> selectedSubGroup = new ArrayList<>(8);
-        final List<SudokuCell> unselectedSubGroup = new ArrayList<>(8);
 
         for (boolean updated = true; updated; ) {
             updated = false;
+            blockLoop:
             for (int[] blockIndex : SUDOKU_BLOCK_INDEX) {
                 indefiniteInCurrentBlock.clear();
                 previousValues.clear();
@@ -147,7 +146,10 @@ public class SudokuField implements SudokuContainer {
                                 .mapToInt(SudokuCell::hintValue)
                                 .reduce(0, (x, y) -> x | y);
                         int nSet = BIT_COUNT[combinedBitsInGroup];
-                        if (nSet < groupSize) return;       // TODO: bad hints in block!
+                        if (nSet < groupSize) {
+                            markCellsAsBad(blockIndex);
+                            continue blockLoop;
+                        }
                         if (nSet == groupSize) {            // Set bits are exhausted by this combination of cells
                             int antiBits = ~combinedBitsInGroup;
                             IntStream.of(complements[combinationIndex])
@@ -163,15 +165,15 @@ public class SudokuField implements SudokuContainer {
         }
     }
 
-    private static boolean isBlockValid(int[] block) {
-        assert block.length == 9;
-        int possibilities = 0;
-        boolean empties = false;
-        for (int i = 0; i < 9; i++) {
-            possibilities |= block[i];
-            empties |= (block[i] & HINT_MASK) == 0;
+    private void markCellsAsBad(int[] blockIndex) {
+        for (int i : blockIndex) {
+            cells[i].value |= HINT_INCONSISTENCE;
         }
-        return !empties && ((possibilities & HINT_MASK) == HINT_MASK);
+    }
+
+    private void unmarkAllCellsAsBad() {
+        for (SudokuCell cell : cells)
+            cell.value &= ~HINT_INCONSISTENCE;
     }
 
     boolean valuesEqual(SudokuField f) {

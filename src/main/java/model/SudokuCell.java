@@ -16,6 +16,7 @@ public class SudokuCell implements SudokuElement {
 
     public static final int HINT_MASK = 0x01FF;
     static final int HINT_ON = 0x0200;
+    static final int HINT_INCONSISTENCE = 0x0400;
 
     final int index;
     int value;
@@ -58,7 +59,9 @@ public class SudokuCell implements SudokuElement {
                 .append(index)
                 .append("\" ");
 
-        List<String> classList = new ArrayList<>(2);
+        List<String> classList = new ArrayList<>(3);
+        if (inconsistentBlock()) classList.add("badblock");
+
         if (isHardcoded())
             classList.add("hard");
         else {
@@ -77,9 +80,12 @@ public class SudokuCell implements SudokuElement {
         builder.append(">");
     }
 
-    boolean contradictsHint() {       // Not checked for hardcoded cells
-        if (!(isDefinite() && isHinted())) return false;
-        return (hintBit(getDefValue()) & value) == 0;
+    private boolean inconsistentBlock() {
+        return (value & HINT_INCONSISTENCE) > 0;
+    }
+
+    private boolean contradictsHint() {       // Not checked for hardcoded cells
+        return (isDefinite() && isHinted()) && (hintBit(getDefValue()) & value) == 0;
     }
 
     static int hardcodedValue(int x) {
@@ -103,7 +109,7 @@ public class SudokuCell implements SudokuElement {
         return 1 << value >> 1;
     }
 
-    public int hintValue() {
+    int hintValue() {
         return value & HINT_MASK;
     }
 }
