@@ -88,6 +88,14 @@
             <input name="value" type="hidden">
         </form>
     </div>
+    <div>
+        <table class="bar">
+            <tr><td class="tile1"><input type="radio" name="clr" value="1"></td>
+                <td class="tile2"><input type="radio" name="clr" value="2"></td>
+                <td class="tile3"><input type="radio" name="clr" value="3"></td>
+                <td class="tile4"><input type="radio" name="clr" value="4"></td></tr>
+        </table>
+    </div>
     <div class="bar">
         <form id="load" enctype="multipart/form-data" method="post" action="/load">
             Load Sudoku from file: <input name="file" type="file" onchange="this.form.submit();">

@@ -1,5 +1,10 @@
 * {
     box-sizing: border-box;
+    --color1: #1a9609;
+    --color2: #0bc59f;
+    --color3: #9dc516;
+    --color4: #1327c5;
+
 }
 
 body {
@@ -50,6 +55,8 @@ th {
 
 .bar {
     text-align: left;
+    width: 100%;
+    height: auto;
 }
 
 tr {
@@ -64,7 +71,6 @@ td {
     border-right: 1px solid #cccccc;
     padding: 1px;
     transition: all 0.2s;
-    color: #1a9609;
 }
 
 table table td:last-child {
@@ -138,4 +144,24 @@ table table td.bad {
 
 table table td.badblock {
     background:burlywood;
+}
+
+.tile1 {
+    color: var(--color1);
+    background: var(--color1);
+}
+
+.tile2 {
+    color: var(--color2);
+    background: var(--color2);
+}
+
+.tile3 {
+    color: var(--color3);
+    background: var(--color3);
+}
+
+.tile4 {
+    color: var(--color4);
+    background: var(--color4);
 }
