@@ -4,7 +4,7 @@ import model.SudokuCell;
 
 import java.util.stream.IntStream;
 
-class Combinatorics {
+public class Combinatorics {
     private static final int MAX_N = 9;
     public static final int[] BIT_COUNT = generatiBitCountMatrix();
 
@@ -19,7 +19,7 @@ class Combinatorics {
      * <p>
      * COMBINATIONS[0], COMBINATIONS[i][0] == null
      */
-    static final int[][][][] COMBINATIONS = generateCombinationsMatrix(MAX_N);
+    public static final int[][][][] COMBINATIONS = generateCombinationsMatrix(MAX_N);
 
     /**
      * This is the inverse of COMBINATIONS matrix.
@@ -28,7 +28,7 @@ class Combinatorics {
      * <p>
      * ANTI_COMBINATIONS[0], ANTI_COMBINATIONS[i][0] == null
      */
-    static final int[][][][] ANTI_COMBINATIONS = reverseCombinationsMatrix(COMBINATIONS);
+    public static final int[][][][] ANTI_COMBINATIONS = reverseCombinationsMatrix(COMBINATIONS);
 
     private static int[] generateFactorials(int maxN) {
         int[] result = new int[maxN + 1];

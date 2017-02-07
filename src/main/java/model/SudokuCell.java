@@ -102,4 +102,8 @@ public class SudokuCell implements SudokuElement {
     static int hintBit(int value) {
         return 1 << value >> 1;
     }
+
+    public int hintValue() {
+        return value & HINT_MASK;
+    }
 }

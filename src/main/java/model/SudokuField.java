@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 
 import static model.SudokuCell.*;
 import static model.SudokuConstants.SUDOKU_BLOCK_INDEX;
+import static model.util.Combinatorics.*;
 
 public class SudokuField implements SudokuContainer {
     final SudokuCell[] cells = new SudokuCell[81];
@@ -116,54 +117,50 @@ public class SudokuField implements SudokuContainer {
 
     private void generateSmartHints() {
         generateHints(HintMode.ON);
-        for (SudokuCell cell : cells) {
-            if (cell.contradictsHint()) return;
-            if (! cell.isDefinite()) continue;
-            // For definite cells, set only one bit for possible contents.
-            cell.value &= ~HINT_MASK;
-            cell.value |= hintBit(cell.getDefValue());
-        }
+        for (SudokuCell cell : cells)
+            if (cell.contradictsHint())
+                return;     // Bad cells detected, cannot proceed // TODO: verify if this is required
 
-        SudokuCell[] currentBlock = new SudokuCell[9];
-        List<SudokuCell> indefiniteInCurrentBlock = new ArrayList<>(9);
-        List<SudokuCell> selectedSubGroup = new ArrayList<>(8);
-        List<SudokuCell> unselectedSubGroup = new ArrayList<>(8);
+        final List<SudokuCell> indefiniteInCurrentBlock = new ArrayList<>(9);
+        final List<Integer> previousValues = new ArrayList<>(9);
+        final List<SudokuCell> selectedSubGroup = new ArrayList<>(8);
+        final List<SudokuCell> unselectedSubGroup = new ArrayList<>(8);
 
-        int[] currentBlockValues = new int[9];
-        int[] buf = new int[9];
         for (boolean updated = true; updated; ) {
             updated = false;
             for (int[] blockIndex : SUDOKU_BLOCK_INDEX) {
-                for (int j = 0; j < 9; j++) {
-                    currentBlock[j] = cells[blockIndex[j]];
-                    currentBlockValues[j] = currentBlock[j].value;
-                }
-                if (!isBlockValid(currentBlockValues)) return;
+                indefiniteInCurrentBlock.clear();
+                previousValues.clear();
+                for (int index : blockIndex)
+                    if (!cells[index].isDefinite()) {
+                        indefiniteInCurrentBlock.add(cells[index]);
+                        previousValues.add(cells[index].value);
+                    }
 
-                for (int j = 0; j < 9; j++) {
-                    if (currentBlock[j].isDefinite()) continue;
-                    int currentCellValue = currentBlock[j].value;
-                    for (int n = 0; n < 9; n++) {
-                        int nthBit = 1 << n;
-                        if ((currentCellValue & nthBit) == 0) continue;
-                        System.arraycopy(currentBlockValues, 0, buf, 0, 9);
-                        int clearNthBit = ~nthBit;
-                        for (int k = 0; k < 9; k++)
-                            buf[k] &= clearNthBit;
-                        buf[j] |= nthBit;
-                        if (!isBlockValid(buf)) {       // Variant that makes block invalid cannot be used, delete from hint
-                            currentBlock[j].value &= ~nthBit;
-                            updated = true;
+                int numIndefs = indefiniteInCurrentBlock.size();
+                for (int groupSize = 1; groupSize < numIndefs; groupSize++) {
+                    final int[][] combinations = COMBINATIONS[numIndefs][groupSize];
+                    final int[][] complements = ANTI_COMBINATIONS[numIndefs][groupSize];
+                    for (int combinationIndex = 0; combinationIndex < combinations.length; combinationIndex++) {
+                        final int combinedBitsInGroup = IntStream.of(combinations[combinationIndex])
+                                .mapToObj(indefiniteInCurrentBlock::get)
+                                .mapToInt(SudokuCell::hintValue)
+                                .reduce(0, (x, y) -> x | y);
+                        int nSet = BIT_COUNT[combinedBitsInGroup];
+                        if (nSet < groupSize) return;       // TODO: bad hints in block!
+                        if (nSet == groupSize) {            // Set bits are exhausted by this combination of cells
+                            int antiBits = ~combinedBitsInGroup;
+                            IntStream.of(complements[combinationIndex])
+                                    .mapToObj(indefiniteInCurrentBlock::get)
+                                    .forEach(sudokuCell -> sudokuCell.value &= antiBits);
                         }
-
                     }
 
                 }
-
+                for (int indef = 0; indef < numIndefs; indef++)
+                    updated |= indefiniteInCurrentBlock.get(indef).value != previousValues.get(indef);
             }
-
         }
-
     }
 
     private static boolean isBlockValid(int[] block) {
