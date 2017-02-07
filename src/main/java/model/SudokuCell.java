@@ -8,8 +8,9 @@ import java.util.StringJoiner;
 
 @AllArgsConstructor
 public class SudokuCell implements SudokuElement {
-    //                              Reserved-\   /-Definite value or 0
-    //              Definite & hardcoded-\   |  |  /-"Hint On" bit and possible values (bitmask)
+    //                                         /-Color code
+    //                              Reserved-\|  /-Definite value or 0
+    //              Definite & hardcoded-\   || |  /-"Hint On" bit and possible values (bitmask)
     private static final int DEFINITE = 0x1_000_0_000;
     private static final int HARDCODED = 0x3_000_0_000;     // Hardcoded is always definite
     private static final int CLEAR_VAL = 0xFFFF0FFF;
@@ -17,6 +18,9 @@ public class SudokuCell implements SudokuElement {
     public static final int HINT_MASK = 0x01FF;
     static final int HINT_ON = 0x0200;
     static final int HINT_INCONSISTENCE = 0x0400;
+
+    private static final String COLOR_STYLE_PREFIX = "entry";
+    private static final int COLOR_MASK = 0xF0000;
 
     final int index;
     int value;
@@ -68,7 +72,11 @@ public class SudokuCell implements SudokuElement {
             builder.append("onclick=\"cellClick(this)\" ");
 
             if (contradictsHint()) classList.add("bad");
-            if (isHinted() & !isDefinite()) classList.add("hint");
+            if (isDefinite()) {
+                classList.add(COLOR_STYLE_PREFIX + getColorCode());
+            } else if (isHinted())
+                classList.add("hint");
+
         }
         if (classList.size() > 0) {
             StringJoiner sj = new StringJoiner(" ", "class=\"", "\"");
@@ -111,5 +119,14 @@ public class SudokuCell implements SudokuElement {
 
     int hintValue() {
         return value & HINT_MASK;
+    }
+
+    public void setColorCode(int colorCode) {
+        value &= ~COLOR_MASK;
+        value |= colorCode << 16;
+    }
+
+    private int getColorCode() {
+        return (value & COLOR_MASK) >> 16;
     }
 }

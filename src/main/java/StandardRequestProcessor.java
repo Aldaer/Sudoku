@@ -32,13 +32,16 @@ class StandardRequestProcessor implements RequestProcessor {
 
         final String cell = request.getParameter("cell");
         final String value = request.getParameter("value");
+        final int colorCode = Optional.ofNullable(request.getParameter("clr"))
+                .map(Integer::parseInt)
+                .orElse(1);
 
         if (cell != null && value != null) try {
-            playingField.setCellValue(cell, value);
+            playingField.setCellValue(cell, value, colorCode);
         } catch (NumberFormatException ignored) {
         }
 
-        generateResponse(playingField, cookieHintMode);
+        generateResponse(playingField, cookieHintMode, colorCode);
     }
 
     @Override
@@ -108,11 +111,11 @@ class StandardRequestProcessor implements RequestProcessor {
         );
     }
 
-    private void generateResponse(SudokuField playingField, HintMode hintMode) throws IOException {
+    private void generateResponse(SudokuField playingField, HintMode hintMode, int color) throws IOException {
         playingField.generateHints(hintMode);
         addFieldAsCookie(playingField);
 
-        TemplateProcessor tp = TemplateProcessor.with(playingField, hintMode);
+        TemplateProcessor tp = TemplateProcessor.with(playingField, hintMode, color);
         String responseHtml = tp.process();
 
         try (PrintWriter writer = response.getWriter()) {

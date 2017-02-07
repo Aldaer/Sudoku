@@ -119,6 +119,7 @@ td.selected {
     position: fixed;
     background: #277cff;
 }
+
 .setnumber table {
     width: 120px;
     height: 145px;
@@ -143,25 +144,37 @@ table table td.bad {
 }
 
 table table td.badblock {
-    background:burlywood;
+    background: burlywood;
 }
 
 .tile1 {
-    color: var(--color1);
     background: var(--color1);
 }
 
 .tile2 {
-    color: var(--color2);
     background: var(--color2);
 }
 
 .tile3 {
-    color: var(--color3);
     background: var(--color3);
 }
 
 .tile4 {
-    color: var(--color4);
     background: var(--color4);
+}
+
+.entry1 {
+    color: var(--color1);
+}
+
+.entry2 {
+    color: var(--color2);
+}
+
+.entry3 {
+    color: var(--color3);
+}
+
+.entry4 {
+    color: var(--color4);
 }

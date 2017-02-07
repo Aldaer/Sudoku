@@ -82,19 +82,16 @@
             <input type="radio" name="hint" value="SMART">smart
         </form>
         <form id="set" method="post">
-            <button formaction="/reset">Reset field</button>
-            <button formaction="/terminate" style="color: red">Kill server</button>
             <input name="cell" type="hidden">
             <input name="value" type="hidden">
+            Working color:<br>
+            <table class="bar">
+                <tr><td class="tile1"><input type="radio" name="clr" value="1"></td>
+                    <td class="tile2"><input type="radio" name="clr" value="2"></td>
+                    <td class="tile3"><input type="radio" name="clr" value="3"></td>
+                    <td class="tile4"><input type="radio" name="clr" value="4"></td></tr>
+            </table>
         </form>
-    </div>
-    <div>
-        <table class="bar">
-            <tr><td class="tile1"><input type="radio" name="clr" value="1"></td>
-                <td class="tile2"><input type="radio" name="clr" value="2"></td>
-                <td class="tile3"><input type="radio" name="clr" value="3"></td>
-                <td class="tile4"><input type="radio" name="clr" value="4"></td></tr>
-        </table>
     </div>
     <div class="bar">
         <form id="load" enctype="multipart/form-data" method="post" action="/load">
@@ -109,6 +106,12 @@
             <tr style="height: 16%">
                 <td colspan="2">Clear</td><td onclick="hidePad(event)"><img src="close.gif"/></td></tr>
         </table>
+    </div>
+    <div class="bar">
+        <form>
+            <button formaction="/reset">Reset field</button>
+            <button formaction="/terminate" style="color: red">Kill server</button>
+        </form>
     </div>
 </div>
 <script src="extras/main.js"></script>

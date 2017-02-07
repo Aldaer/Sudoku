@@ -73,7 +73,7 @@ public class SudokuField implements SudokuContainer {
         return FieldLoader.encode(i -> cells[i].value);
     }
 
-    public void setCellValue(String cell, String value) {
+    public void setCellValue(String cell, String value, int colorCode) {
         try {
             int cellNum = Integer.parseInt(cell);
             if (cellNum < 0 || cellNum > 80) return;
@@ -81,6 +81,7 @@ public class SudokuField implements SudokuContainer {
 
             if (val < 0 || val > 9) return;
             cells[cellNum].setDefiniteValue(val);
+            cells[cellNum].setColorCode(colorCode);
         } catch (NumberFormatException ignored) {
         }
     }

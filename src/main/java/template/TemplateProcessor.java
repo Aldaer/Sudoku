@@ -18,9 +18,10 @@ public class TemplateProcessor {
 
     private final SudokuField playingField;
     private final HintMode hintMode;
+    private final int colorCode;
 
-    public static TemplateProcessor with(SudokuField playingField, HintMode hintMode) {
-        return new TemplateProcessor(playingField, hintMode);
+    public static TemplateProcessor with(SudokuField playingField, HintMode hintMode, int color) {
+        return new TemplateProcessor(playingField, hintMode, color);
     }
 
     private static String getMainTemplate() {
@@ -48,7 +49,9 @@ public class TemplateProcessor {
 
         String page = templateMatcher().replaceFirst(responseTable.toString());
 
-        return checkRadioButton(page, "hint", hintMode.name());
+        page = checkRadioButton(page, "hint", hintMode.name());
+        return checkRadioButton(page, "clr", String.valueOf(colorCode));
+
     }
 
     private String checkRadioButton(String html, String group, String value) {
