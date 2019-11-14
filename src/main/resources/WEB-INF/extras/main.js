@@ -7,7 +7,7 @@ function cellClick(el) {
     $(el).addClass("selected");
     $(el).append(NUMPAD);
     NUMPAD.addClass("popup");
-    NUMPAD.data("id",  el.getAttribute("id"));
+    NUMPAD.data("id",  el.id);
 }
 
 function hidePad(event) {
