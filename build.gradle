@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.eclipse.jetty:jetty-server:+'
+    compile 'org.eclipse.jetty:jetty-server:9.4.5+'
     compile 'commons-io:commons-io:+'
 
     compileOnly 'org.projectlombok:lombok:+'
