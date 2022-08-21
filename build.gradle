@@ -9,9 +9,10 @@ repositories {
 
 dependencies {
     compile 'org.eclipse.jetty:jetty-server:9.4.5+'
-    compile 'commons-io:commons-io:+'
+    compile 'commons-io:commons-io:2.+'
 
-    compileOnly 'org.projectlombok:lombok:+'
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
 
     testCompile 'org.apache.httpcomponents:httpcore:+'
     testCompile 'org.apache.httpcomponents:httpmime:+'
