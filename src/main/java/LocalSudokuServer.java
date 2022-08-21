@@ -13,7 +13,10 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class LocalSudokuServer extends Thread {
-    static final int PORT = 8888;
+    static final int PORT =
+            Optional.ofNullable(System.getenv("PORT"))
+                    .map(Integer::valueOf)
+                    .orElse(8080);
 
     final Server server = new Server(PORT);
 
@@ -24,6 +27,7 @@ public class LocalSudokuServer extends Thread {
             hList.setHandlers(createHandlers());
             server.setHandler(hList);
             server.start();
+            System.out.println("Running server on port " + PORT);
         } catch (Exception e) {
             System.out.println("Error running server");
             e.printStackTrace();
