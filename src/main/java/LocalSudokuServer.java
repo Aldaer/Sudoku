@@ -58,7 +58,7 @@ public class LocalSudokuServer extends Thread {
                 Optional.ofNullable(request
                         .getContentType())
                         .filter(t -> t.startsWith("multipart"))
-                        .ifPresent(t -> baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MPCE));
+                        .ifPresent(t -> baseRequest.setAttribute(Request.MULTIPART_CONFIG_ELEMENT, MPCE));
                 super.handle(target, baseRequest, request, response);
             }
         };
