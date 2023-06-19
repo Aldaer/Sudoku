@@ -21,15 +21,22 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 
 public class LocalServerTest {
-    private static final String SERVER_URL = "http://localhost:" + LocalSudokuServer.PORT;
+    // Test server runs on port 5000
+    private static final int TEST_PORT = 5000;
+    private static final String SERVER_URL = "http://localhost:" + TEST_PORT;
 
     private HttpClient httpClient;
 
     private final static LocalSudokuServer serverWithLoopback = new LocalSudokuServer() {
+        @Override
+        int getPort() {
+            return TEST_PORT;
+        }
+
         @Override
         Handler[] createHandlers() {
             ParsingHandler parsingHandlerWithLoopback = new ParsingHandler(server,
@@ -57,12 +64,12 @@ public class LocalServerTest {
 
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() {
         serverWithLoopback.start();
     }
 
     @Before
-    public void setUpClient() throws Exception {
+    public void setUpClient() {
         httpClient = HttpClientBuilder.create().build();
     }
 

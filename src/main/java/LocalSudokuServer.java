@@ -13,12 +13,16 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class LocalSudokuServer extends Thread {
-    static final int PORT =
+    private static final int PORT =
             Optional.ofNullable(System.getenv("PORT"))
                     .map(Integer::valueOf)
                     .orElse(8080);
 
-    final Server server = new Server(PORT);
+    int getPort() {
+        return PORT;
+    }
+
+    final Server server = new Server(getPort());
 
     @Override
     public void run() {
