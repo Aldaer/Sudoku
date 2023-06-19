@@ -1,0 +1,17 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+  build:
+    commands:
+      - echo Building...
+      - ./gradlew build
+artifacts:
+  files:
+    - '*.jar'
+cache:
+  paths:
+    - '/root/gradle/**/*'
+    - '/root/.gradle/**/*'
