@@ -13,5 +13,5 @@ artifacts:
     - '*.jar'
 cache:
   paths:
-    - '/root/gradle/**/*'
     - '/root/.gradle/**/*'
+    - '/root/.m2/**/*'
