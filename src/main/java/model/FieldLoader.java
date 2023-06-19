@@ -2,12 +2,8 @@ package model;
 
 import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.IntUnaryOperator;
 
 import static model.SudokuCell.hardcodedValue;
@@ -31,11 +27,11 @@ public class FieldLoader {
 
     public static SudokuField getDefaultField() {
         try {
-            final List<String> strs = IOUtils.readLines(FieldLoader.class
-                    .getClassLoader().getResourceAsStream("data/default_field.txt"), StandardCharsets.UTF_8);
+            final List<String> strs = IOUtils.readLines(Objects.requireNonNull(FieldLoader.class
+                    .getClassLoader().getResourceAsStream("data/default_field.txt")), StandardCharsets.UTF_8);
 
             return getFieldFromText(strs);
-        } catch (IOException | InvalidFieldDataException e) {
+        } catch (InvalidFieldDataException e) {
             throw new RuntimeException(e);
         }
     }

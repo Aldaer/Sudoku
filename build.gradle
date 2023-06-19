@@ -1,10 +1,12 @@
 group 'FunProjects'
-version '1.1'
+version '1.2'
 
 apply plugin: 'java'
 
-tasks.withType(Jar) {
-    destinationDir = file("$rootDir")
+targetCompatibility = 11
+
+tasks.withType(Jar).configureEach {
+    destinationDirectory = file("$rootDir")
 }
 
 repositories {
