@@ -13,10 +13,9 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class LocalSudokuServer extends Thread {
-    private static final int PORT =
-            Optional.ofNullable(System.getenv("PORT"))
-                    .map(Integer::valueOf)
-                    .orElse(8080);
+    private static final int PORT = Integer.parseInt(
+                    Optional.ofNullable(System.getenv("PORT"))
+                    .orElseGet(() -> System.getProperty("port", "8080")));
 
     int getPort() {
         return PORT;
